@@ -3,12 +3,12 @@
     "minecraft:overworld": {
       "type": "minecraft:overworld",
       "generator": {
-        "type": "minecraft:noise",
+        "type": "lostworlds:lostworlds",
         "biome_source": {
           "type": "minecraft:multi_noise",
           "preset": "minecraft:overworld"
         },
-        "settings": "minecraft:large_biomes"
+        "settings": "lostworlds:lost_islands"
       }
     },
     "minecraft:the_end": {
