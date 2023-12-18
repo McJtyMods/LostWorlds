@@ -24,6 +24,7 @@ public class ModSetup {
             Registry.register(BuiltInRegistries.CHUNK_GENERATOR, LOSTWORLDS_CHUNKGEN, LostWorldsChunkGenerator.CODEC);
 //            Registry.register(BuiltInRegistries.BIOME_SOURCE, DimensionRegistry.RFTOOLS_BIOMES_ID, RFTBiomeProvider.CODEC);
         });
+        Messages.registerMessages("lostworlds");
 
     }
 }

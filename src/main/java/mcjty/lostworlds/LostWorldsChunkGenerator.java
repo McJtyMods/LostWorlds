@@ -27,7 +27,7 @@ public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
     }
 
     @Override
-    public int getSeaLevel() {
-        return -30;
+    protected Codec<? extends ChunkGenerator> codec() {
+        return CODEC;
     }
 }
