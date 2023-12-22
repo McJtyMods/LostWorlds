@@ -1,6 +1,7 @@
 package mcjty.lostworlds;
 
 import mcjty.lostworlds.setup.ClientSetup;
+import mcjty.lostworlds.setup.Config;
 import mcjty.lostworlds.setup.ModSetup;
 import mcjty.lostworlds.setup.Registration;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,6 +21,7 @@ public class LostWorlds {
 
     public LostWorlds() {
         instance = this;
+        Config.register();
         Registration.init();
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(EventHandlers::onRegisterPresetEditorsEvent);
