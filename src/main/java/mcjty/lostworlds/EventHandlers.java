@@ -3,6 +3,8 @@ package mcjty.lostworlds;
 import mcjty.lostworlds.client.LostWorldsPresetEditor;
 import mcjty.lostworlds.network.PacketWorldInfoToClient;
 import mcjty.lostworlds.setup.Messages;
+import mcjty.lostworlds.worldgen.LostWorldType;
+import mcjty.lostworlds.worldgen.LostWorldsChunkGenerator;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -24,8 +26,8 @@ public class EventHandlers {
     public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
         if (!event.getEntity().level().isClientSide) {
             ServerPlayer player = (ServerPlayer) event.getEntity();
-            boolean isFlat = ((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LostWorldsChunkGenerator;
-            Messages.INSTANCE.sendTo(new PacketWorldInfoToClient(isFlat), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            LostWorldType type = (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LostWorldsChunkGenerator generator) ? generator.getType() : LostWorldType.ISLANDS;
+            Messages.INSTANCE.sendTo(new PacketWorldInfoToClient(type), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
     }
 }

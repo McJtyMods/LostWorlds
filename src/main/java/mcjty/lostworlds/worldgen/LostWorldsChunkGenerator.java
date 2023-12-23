@@ -1,24 +1,22 @@
-package mcjty.lostworlds;
+package mcjty.lostworlds.worldgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import mcjty.lostworlds.setup.Config;
+import mcjty.lostworlds.LostWorlds;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.*;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -27,8 +25,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 
 public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
 
@@ -36,19 +32,25 @@ public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
     public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islands"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_caves"));
 
-    public static final Codec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
-            NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
+    private final LostWorldType type;
+
+    public static final Codec<LostWorldsChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+                    StringRepresentable.fromEnum(LostWorldType::values).fieldOf("lwtype").forGetter(LostWorldsChunkGenerator::getType),
+                    BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
+                    NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
             .apply(instance, instance.stable(LostWorldsChunkGenerator::new)));
 
-    public LostWorldsChunkGenerator(BiomeSource source, Holder<NoiseGeneratorSettings> settings) {
+    public LostWorldsChunkGenerator(LostWorldType type, BiomeSource source, Holder<NoiseGeneratorSettings> settings) {
         super(source, settings);
+        this.type = type;
+    }
+
+    public LostWorldType getType() {
+        return type;
     }
 
     @Override
     public void createStructures(RegistryAccess access, ChunkGeneratorStructureState structureState, StructureManager structureManager, ChunkAccess chunk, StructureTemplateManager templateManager) {
-        Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresIslands();
-
         ChunkPos chunkpos = chunk.getPos();
         SectionPos sectionpos = SectionPos.bottomOf(chunk);
         RandomState randomstate = structureState.randomState();
@@ -56,14 +58,11 @@ public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
             StructurePlacement structureplacement = set.value().placement();
             List<StructureSet.StructureSelectionEntry> list = set.value().structures();
             ResourceKey<StructureSet> key = set.unwrapKey().get();
-            if (excluded.contains(key)) {
-                return;
-            }
-            if (set.is(BuiltinStructureSets.MINESHAFTS)) {
+            if (type.blocksStructure(key)) {
                 return;
             }
 
-            for(StructureSet.StructureSelectionEntry entry : list) {
+            for (StructureSet.StructureSelectionEntry entry : list) {
                 StructureStart structurestart = structureManager.getStartForStructure(sectionpos, entry.structure().value(), chunk);
                 if (structurestart != null && structurestart.isValid()) {
                     return;
@@ -78,15 +77,15 @@ public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
                     WorldgenRandom worldgenrandom = new WorldgenRandom(new LegacyRandomSource(0L));
                     worldgenrandom.setLargeFeatureSeed(structureState.getLevelSeed(), chunkpos.x, chunkpos.z);
                     int totalweight = 0;
-                    for(StructureSet.StructureSelectionEntry entry : listCopy) {
+                    for (StructureSet.StructureSelectionEntry entry : listCopy) {
                         totalweight += entry.weight();
                     }
 
-                    while(!listCopy.isEmpty()) {
+                    while (!listCopy.isEmpty()) {
                         int w = worldgenrandom.nextInt(totalweight);
                         int selected = 0;
 
-                        for(StructureSet.StructureSelectionEntry entry : listCopy) {
+                        for (StructureSet.StructureSelectionEntry entry : listCopy) {
                             w -= entry.weight();
                             if (w < 0) {
                                 break;

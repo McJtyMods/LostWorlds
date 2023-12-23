@@ -1,7 +1,8 @@
 package mcjty.lostworlds.client;
 
 import mcjty.lostworlds.LostWorlds;
-import mcjty.lostworlds.LostWorldsChunkGenerator;
+import mcjty.lostworlds.worldgen.LostWorldType;
+import mcjty.lostworlds.worldgen.LostWorldsChunkGenerator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,12 +14,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class LostWorldsScreen extends Screen {
 
     private final CreateWorldScreen parent;
-    private final Consumer<NoiseGeneratorSettings> applySettings;
+    private final BiConsumer<NoiseGeneratorSettings, LostWorldType> applySettings;
     private NoiseGeneratorSettings generator;
     private final HolderGetter<NoiseGeneratorSettings> noisegetter;
 
@@ -28,7 +29,8 @@ public class LostWorldsScreen extends Screen {
     private final static SelectedSetting CAVES = new SelectedSetting(LostWorldsChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description");
     private SelectedSetting selected = ISLANDS;
 
-    public LostWorldsScreen(CreateWorldScreen worldScreen, HolderGetter<NoiseGeneratorSettings> noisegetter, Consumer<NoiseGeneratorSettings> settingsConsumer, NoiseGeneratorSettings generator) {
+    public LostWorldsScreen(CreateWorldScreen worldScreen, HolderGetter<NoiseGeneratorSettings> noisegetter,
+                            BiConsumer<NoiseGeneratorSettings, LostWorldType> settingsConsumer, NoiseGeneratorSettings generator) {
         super(Component.translatable("createWorld.customize.lostworlds.title"));
         this.parent = worldScreen;
         this.applySettings = settingsConsumer;
@@ -46,7 +48,7 @@ public class LostWorldsScreen extends Screen {
         }).bounds(this.width / 2 + 5, this.height - 52, 150, 20).build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (p_280791_) -> {
             generator = noisegetter.getOrThrow(selected.settingsKey()).get();
-            this.applySettings.accept(this.generator);
+            this.applySettings.accept(this.generator, selected.settingsKey() == LostWorldsChunkGenerator.LOST_ISLANDS ? LostWorldType.ISLANDS : LostWorldType.CAVERNS);
             this.minecraft.setScreen(this.parent);
         }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (p_280792_) -> {

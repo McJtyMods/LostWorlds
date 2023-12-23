@@ -4,6 +4,7 @@
       "type": "minecraft:overworld",
       "generator": {
         "type": "lostworlds:lostworlds",
+        "lwtype": "islands",
         "biome_source": {
           "type": "minecraft:multi_noise",
           "preset": "minecraft:overworld"

@@ -1,16 +1,14 @@
 package mcjty.lostworlds.setup;
 
-import mcjty.lostworlds.LostIslandsDensityFunction;
-import mcjty.lostworlds.LostWorldsChunkGenerator;
+import mcjty.lostworlds.worldgen.LostIslandsDensityFunction;
+import mcjty.lostworlds.worldgen.LostWorldsChunkGenerator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.levelgen.DensityFunctions;
-import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static mcjty.lostworlds.LostWorldsChunkGenerator.LOSTWORLDS_CHUNKGEN;
+import static mcjty.lostworlds.worldgen.LostWorldsChunkGenerator.LOSTWORLDS_CHUNKGEN;
 
 public class ModSetup {
 

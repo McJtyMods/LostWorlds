@@ -9,6 +9,5 @@ public class ClientSetup {
     public static void onRegisterDimensionSpecialEffectsEvent(RegisterDimensionSpecialEffectsEvent event) {
         LostWorlsSpecialEffects effects = new LostWorlsSpecialEffects();
         event.register(new ResourceLocation("minecraft:overworld"), effects);
-
     }
 }

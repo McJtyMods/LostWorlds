@@ -1,6 +1,7 @@
 package mcjty.lostworlds.network;
 
 import mcjty.lostworlds.client.LostWorlsSpecialEffects;
+import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -8,25 +9,24 @@ import java.util.function.Supplier;
 
 public class PacketWorldInfoToClient {
 
-    private final boolean isFlat;
+    private final LostWorldType type;
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBoolean(isFlat);
+        buf.writeShort(type.ordinal());
     }
 
     public PacketWorldInfoToClient(FriendlyByteBuf buf) {
-        isFlat = buf.readBoolean();
+        type = LostWorldType.values()[buf.readShort()];
     }
 
-    public PacketWorldInfoToClient(boolean isFlat) {
-        this.isFlat = isFlat;
+    public PacketWorldInfoToClient(LostWorldType type) {
+        this.type = type;
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            System.out.println("PacketWorldInfoToClient.handle: " + isFlat);
-            LostWorlsSpecialEffects.isFlat = isFlat;
+            LostWorlsSpecialEffects.type = type;
         });
         ctx.setPacketHandled(true);
     }

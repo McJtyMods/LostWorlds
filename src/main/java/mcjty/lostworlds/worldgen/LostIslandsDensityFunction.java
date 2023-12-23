@@ -1,6 +1,7 @@
-package mcjty.lostworlds;
+package mcjty.lostworlds.worldgen;
 
 import com.mojang.serialization.MapCodec;
+import mcjty.lostworlds.LostWorlds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
@@ -32,7 +33,9 @@ public class LostIslandsDensityFunction implements DensityFunction.SimpleFunctio
         int k = x % 2;
         int l = z % 2;
         float f = 100.0F - Mth.sqrt((float)(x * x + z * z)) * 8.0F;
-        f = -100.0f;//Mth.clamp(f, -100.0F, 80.0F);
+        // 80 is no islands
+        // -100 is a lot of open space
+        f = -10.0f;//Mth.clamp(f, -100.0F, 80.0F);
 
         for(int i1 = -12; i1 <= 12; ++i1) {
             for(int j1 = -12; j1 <= 12; ++j1) {
