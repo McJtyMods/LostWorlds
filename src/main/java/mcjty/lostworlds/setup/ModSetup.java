@@ -1,14 +1,14 @@
 package mcjty.lostworlds.setup;
 
-import mcjty.lostworlds.worldgen.LostIslandsDensityFunction;
-import mcjty.lostworlds.worldgen.LostWorldsChunkGenerator;
+import mcjty.lostworlds.worldgen.IslandsDensityFunction;
+import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static mcjty.lostworlds.worldgen.LostWorldsChunkGenerator.LOSTWORLDS_CHUNKGEN;
+import static mcjty.lostworlds.worldgen.LWChunkGenerator.LOSTWORLDS_CHUNKGEN;
 
 public class ModSetup {
 
@@ -23,9 +23,9 @@ public class ModSetup {
         logger = LogManager.getLogger();
         e.enqueueWork(() -> {
 //            Registry.register(BuiltInRegistries.BIOME_SOURCE, DimensionRegistry.RFTOOLS_BIOMES_ID, RFTBiomeProvider.CODEC);
-            Registry.register(BuiltInRegistries.CHUNK_GENERATOR, LOSTWORLDS_CHUNKGEN, LostWorldsChunkGenerator.CODEC);
-            Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, LostIslandsDensityFunction.LOST_ISLANDS, LostIslandsDensityFunction.CODEC.codec());
-            Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, LostIslandsDensityFunction.LOST_ISLANDS_CHEESE, LostIslandsDensityFunction.CODEC_CHEESE.codec());
+            Registry.register(BuiltInRegistries.CHUNK_GENERATOR, LOSTWORLDS_CHUNKGEN, LWChunkGenerator.CODEC);
+            Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, IslandsDensityFunction.LOST_ISLANDS, IslandsDensityFunction.CODEC.codec());
+            Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, IslandsDensityFunction.LOST_ISLANDS_CHEESE, IslandsDensityFunction.CODEC_CHEESE.codec());
         });
         Messages.registerMessages("lostworlds");
 

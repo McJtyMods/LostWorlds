@@ -13,7 +13,11 @@ public enum LostWorldType implements StringRepresentable {
         Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresIslands();
         return excluded.contains(key);
     }),
-    CAVERNS("caverns", key -> false);
+    CAVES("caves", key -> false),
+    VOID("void", key -> {
+        Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresVoid();
+        return excluded.contains(key);
+    });
 
     private final String name;
     private final Predicate<ResourceKey<StructureSet>> blocksStructure;

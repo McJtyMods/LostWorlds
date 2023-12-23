@@ -24,6 +24,13 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
     private static Set<ResourceKey<StructureSet>> exludedStructuresIslands = null;
 
+    private static String[] DEF_EXCLUDED_STRUCTURES_VOID = new String[]{
+            "minecraft:ocean_monuments",
+            "minecraft:mineshafts"
+    };
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_VOID;
+    private static Set<ResourceKey<StructureSet>> exludedStructuresVoid = null;
+
     public static void register() {
         ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
         COMMON_BUILDER.comment("General settings").push(CATEGORY_GENERAL);
@@ -31,6 +38,9 @@ public class Config {
         EXCLUDED_STRUCTURES_ISLANDS = COMMON_BUILDER
                 .comment("A list of structures that should not generate on lost_islands worlds")
                 .defineList("excludedStructuresIslands", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_ISLANDS), s -> s instanceof String);
+        EXCLUDED_STRUCTURES_VOID = COMMON_BUILDER
+                .comment("A list of structures that should not generate on lost_void worlds")
+                .defineList("excludedStructuresVoid", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_VOID), s -> s instanceof String);
 
         COMMON_BUILDER.pop();
         ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
@@ -50,6 +60,21 @@ public class Config {
             }
         }
         return exludedStructuresIslands;
+    }
+
+    public static Set<ResourceKey<StructureSet>> getExludedStructuresVoid() {
+        if (exludedStructuresVoid == null) {
+            exludedStructuresVoid = new HashSet<>();
+            List<? extends String> strings = EXCLUDED_STRUCTURES_VOID.get();
+            for (String s : strings) {
+                ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(s));
+                if (key == null) {
+                    throw new RuntimeException("Unknown structure set: " + s);
+                }
+                exludedStructuresVoid.add(key);
+            }
+        }
+        return exludedStructuresVoid;
     }
 
 }

@@ -1,6 +1,7 @@
 package mcjty.lostworlds.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,23 +12,28 @@ import org.joml.Matrix4f;
 public class LostWorlsSpecialEffects extends DimensionSpecialEffects {
 
     public static LostWorldType type;
+    public static FogColor fogColor;
 
     public LostWorlsSpecialEffects() {
         super(192.0F, true, DimensionSpecialEffects.SkyType.NORMAL, false, false);
     }
 
     @Override
-    public Vec3 getBrightnessDependentFogColor(Vec3 fogColor, float brightness) {
-        if (type == LostWorldType.ISLANDS) {
-            return fogColor.multiply(brightness * 0.94F + 0.06F, brightness * 0.94F + 0.06F, (double)(brightness * 0.91F + 0.09F));
+    public Vec3 getBrightnessDependentFogColor(Vec3 color, float brightness) {
+        if (fogColor == FogColor.NONE) {
+            if (type == LostWorldType.ISLANDS) {
+                return color.multiply(brightness * 0.94F + 0.06F, brightness * 0.94F + 0.06F, (double) (brightness * 0.91F + 0.09F));
+            } else {
+                return new Vec3(0.0f, 0.0f, 0.0f);
+            }
         } else {
-            return new Vec3(0.0f, 0.0f, 0.0f);
+            return fogColor.getFogColor();
         }
     }
 
     @Override
     public SkyType skyType() {
-        if (type == LostWorldType.CAVERNS) {
+        if (type == LostWorldType.CAVES) {
             return SkyType.NONE;
         }
         return super.skyType();
@@ -43,7 +49,7 @@ public class LostWorlsSpecialEffects extends DimensionSpecialEffects {
 
     @Override
     public boolean isFoggyAt(int x, int y) {
-        return false;
+        return fogColor != FogColor.NONE;
     }
 
     @Override

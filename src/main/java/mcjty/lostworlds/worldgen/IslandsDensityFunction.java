@@ -12,16 +12,16 @@ import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 
-public class LostIslandsDensityFunction implements DensityFunction.SimpleFunction {
-    public static final KeyDispatchDataCodec<LostIslandsDensityFunction> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(new LostIslandsDensityFunction(0L)));
-    public static final KeyDispatchDataCodec<DensityFunction> CODEC_CHEESE = KeyDispatchDataCodec.of(MapCodec.unit(DensityFunctions.add(new LostIslandsDensityFunction(0L), BlendedNoise.createUnseeded(0.25D, 0.25D, 80.0D, 160.0D, 4.0D))));
+public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
+    public static final KeyDispatchDataCodec<IslandsDensityFunction> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(new IslandsDensityFunction(0L)));
+    public static final KeyDispatchDataCodec<DensityFunction> CODEC_CHEESE = KeyDispatchDataCodec.of(MapCodec.unit(DensityFunctions.add(new IslandsDensityFunction(0L), BlendedNoise.createUnseeded(0.25D, 0.25D, 80.0D, 160.0D, 4.0D))));
     private static final float ISLAND_THRESHOLD = -0.9F;
     private final SimplexNoise islandNoise;
 
     public static final ResourceLocation LOST_ISLANDS = new ResourceLocation(LostWorlds.MODID, "lost_islands");
     public static final ResourceLocation LOST_ISLANDS_CHEESE = new ResourceLocation(LostWorlds.MODID, "lost_islands_cheese");
 
-    public LostIslandsDensityFunction(long p_208630_) {
+    public IslandsDensityFunction(long p_208630_) {
         RandomSource randomsource = new LegacyRandomSource(p_208630_);
         randomsource.consumeCount(17292);
         this.islandNoise = new SimplexNoise(randomsource);

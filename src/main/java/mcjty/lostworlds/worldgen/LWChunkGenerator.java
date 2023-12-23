@@ -26,27 +26,28 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import java.util.ArrayList;
 import java.util.List;
 
-public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
+public class LWChunkGenerator extends NoiseBasedChunkGenerator {
 
     public static final ResourceLocation LOSTWORLDS_CHUNKGEN = new ResourceLocation(LostWorlds.MODID, "lostworlds");
     public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islands"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_caves"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_VOID = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_void"));
 
-    private final LostWorldType type;
+    private final LWSettings lwSettings;
 
-    public static final Codec<LostWorldsChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                    StringRepresentable.fromEnum(LostWorldType::values).fieldOf("lwtype").forGetter(LostWorldsChunkGenerator::getType),
-                    BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
-                    NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
-            .apply(instance, instance.stable(LostWorldsChunkGenerator::new)));
+    public static final Codec<LWChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+                LWSettings.CODEC.fieldOf("lwsettings").forGetter(LWChunkGenerator::getLwSettings),
+                BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
+                NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
+            .apply(instance, instance.stable(LWChunkGenerator::new)));
 
-    public LostWorldsChunkGenerator(LostWorldType type, BiomeSource source, Holder<NoiseGeneratorSettings> settings) {
+    public LWChunkGenerator(LWSettings lwSettings, BiomeSource source, Holder<NoiseGeneratorSettings> settings) {
         super(source, settings);
-        this.type = type;
+        this.lwSettings = lwSettings;
     }
 
-    public LostWorldType getType() {
-        return type;
+    public LWSettings getLwSettings() {
+        return lwSettings;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class LostWorldsChunkGenerator extends NoiseBasedChunkGenerator {
             StructurePlacement structureplacement = set.value().placement();
             List<StructureSet.StructureSelectionEntry> list = set.value().structures();
             ResourceKey<StructureSet> key = set.unwrapKey().get();
-            if (type.blocksStructure(key)) {
+            if (lwSettings.type().blocksStructure(key)) {
                 return;
             }
 
