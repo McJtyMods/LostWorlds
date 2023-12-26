@@ -4,6 +4,8 @@
     "createWorld.customize.lostworlds.caves": "Caves",
     "createWorld.customize.lostworlds.islands.description": "Play in a world filled with islands. In combination with Lost Cities you can have these islands populated with cities.",
     "createWorld.customize.lostworlds.islands": "Islands",
+    "createWorld.customize.lostworlds.islandswater.description": "Play in a world filled with islands and a big ocean at the bottom. In combination with Lost Cities you can have these islands populated with cities.",
+    "createWorld.customize.lostworlds.islandswater": "IslandsW",
     "createWorld.customize.lostworlds.void.description": "Play in a void world. In combination with Lost Cities you can have this void populated with spheres containing cities.",
     "createWorld.customize.lostworlds.void": "Void",
     "generator.lostworlds.lost_worlds": "Lost Worlds"

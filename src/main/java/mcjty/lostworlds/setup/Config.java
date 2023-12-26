@@ -26,7 +26,12 @@ public class Config {
 
     private static String[] DEF_EXCLUDED_STRUCTURES_VOID = new String[]{
             "minecraft:ocean_monuments",
-            "minecraft:mineshafts"
+            "minecraft:mineshafts",
+            "minecraft:village_plains",
+            "minecraft:village_desert",
+            "minecraft:village_savanna",
+            "minecraft:village_snowy",
+            "minecraft:village_taiga"
     };
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_VOID;
     private static Set<ResourceKey<StructureSet>> exludedStructuresVoid = null;
