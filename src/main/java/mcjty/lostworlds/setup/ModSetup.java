@@ -1,5 +1,6 @@
 package mcjty.lostworlds.setup;
 
+import mcjty.lostworlds.compat.LostCitiesCompat;
 import mcjty.lostworlds.worldgen.IslandsDensityFunction;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import net.minecraft.core.Registry;
@@ -28,6 +29,7 @@ public class ModSetup {
             Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, IslandsDensityFunction.LOST_ISLANDS_CHEESE, IslandsDensityFunction.CODEC_CHEESE.codec());
         });
         Messages.registerMessages("lostworlds");
-
+        LostCitiesCompat.register();
     }
+
 }

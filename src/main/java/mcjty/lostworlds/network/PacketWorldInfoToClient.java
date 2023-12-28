@@ -1,6 +1,6 @@
 package mcjty.lostworlds.network;
 
-import mcjty.lostworlds.client.LostWorlsSpecialEffects;
+import mcjty.lostworlds.client.LostWorldsSpecialEffects;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.network.FriendlyByteBuf;
@@ -31,8 +31,8 @@ public class PacketWorldInfoToClient {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            LostWorlsSpecialEffects.type = type;
-            LostWorlsSpecialEffects.fogColor = fogColor;
+            LostWorldsSpecialEffects.type = type;
+            LostWorldsSpecialEffects.fogColor = fogColor;
         });
         ctx.setPacketHandled(true);
     }
