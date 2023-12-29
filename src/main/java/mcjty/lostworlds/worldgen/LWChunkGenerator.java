@@ -5,10 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lostcities.varia.NoiseGeneratorPerlin;
 import mcjty.lostworlds.LostWorlds;
 import mcjty.lostworlds.compat.LostCitiesCompat;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.SectionPos;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +16,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,6 +32,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class LWChunkGenerator extends NoiseBasedChunkGenerator {
 
@@ -150,6 +151,53 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         return super.getBaseHeight(x, z, type, level, random);
     }
 
+    // We override buildSurface because there is some hardcoded badlands stuff that is done here and we don't want that
+    @Override
+    public void buildSurface(ChunkAccess chunkAccess, WorldGenerationContext wgContext, RandomState random, StructureManager structureManager, BiomeManager biomeManager, Registry<Biome> biomes, Blender blender) {
+        if (lwSettings.type() == LostWorldType.VOID) {
+            WorldGenRegion region = (WorldGenRegion) structureManager.level;
+            cachedLevel = region.getLevel();
+            LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
+            // Only generate the chunk if we have Lost Cities and we are in a sphere
+            if (context != null) {
+                ChunkPos cp = chunkAccess.getPos();
+                if (context.isInSphereFull(cp.getMinBlockX(), cp.getMinBlockZ())) {
+                    // We are fully in the sphere. Just generate the chunk as normal
+                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
+                } else if (context.isInSphere(cp.getMinBlockX(), cp.getMinBlockZ())) {
+                    // We are partially in the sphere. Generate the chunk but remove blocks that are outside the sphere
+                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
+                    int minBuildHeight = chunkAccess.getMinBuildHeight();
+                    int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+                    int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+                    int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+                    BlockState air = Blocks.AIR.defaultBlockState();
+                    for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
+                        if (y >= minSphereY && y <= maxSphereY) {
+                            LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                            for (int x = 0; x < 16; ++x) {
+                                for (int z = 0; z < 16; ++z) {
+                                    if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
+                                        levelchunksection.setBlockState(x, y & 15, z, air, false);
+                                    }
+                                }
+                            }
+                        } else {
+                            LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                            for (int x = 0; x < 16; ++x) {
+                                for (int z = 0; z < 16; ++z) {
+                                    levelchunksection.setBlockState(x, y & 15, z, air, false);
+                                }
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+        }
+        super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
+    }
+
     @Override
     public void createStructures(RegistryAccess access, ChunkGeneratorStructureState structureState, StructureManager structureManager, ChunkAccess chunk, StructureTemplateManager templateManager) {
         if (structureManager.level instanceof ServerLevel serverLevel) {
@@ -157,7 +205,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         } else if (structureManager.level instanceof WorldGenRegion region) {
             cachedLevel = region.getLevel();
         }
-        ChunkPos chunkpos = chunk.getPos();
+        ChunkPos cp = chunk.getPos();
         SectionPos sectionpos = SectionPos.bottomOf(chunk);
         RandomState randomstate = structureState.randomState();
         structureState.possibleStructureSets().forEach((set) -> {
@@ -175,13 +223,13 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
                 }
             }
 
-            if (structureplacement.isStructureChunk(structureState, chunkpos.x, chunkpos.z)) {
+            if (structureplacement.isStructureChunk(structureState, cp.x, cp.z)) {
                 if (list.size() == 1) {
-                    this.tryGenerateStructure(list.get(0), structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, chunkpos, sectionpos);
+                    this.tryGenerateStructure(list.get(0), structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos);
                 } else {
                     List<StructureSet.StructureSelectionEntry> listCopy = new ArrayList<>(list);
                     WorldgenRandom worldgenrandom = new WorldgenRandom(new LegacyRandomSource(0L));
-                    worldgenrandom.setLargeFeatureSeed(structureState.getLevelSeed(), chunkpos.x, chunkpos.z);
+                    worldgenrandom.setLargeFeatureSeed(structureState.getLevelSeed(), cp.x, cp.z);
                     int totalweight = 0;
                     for (StructureSet.StructureSelectionEntry entry : listCopy) {
                         totalweight += entry.weight();
@@ -200,7 +248,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
                         }
 
                         StructureSet.StructureSelectionEntry entry = listCopy.get(selected);
-                        if (this.tryGenerateStructure(entry, structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, chunkpos, sectionpos)) {
+                        if (this.tryGenerateStructure(entry, structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos)) {
                             return;
                         }
 

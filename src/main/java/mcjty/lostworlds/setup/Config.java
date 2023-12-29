@@ -19,6 +19,7 @@ public class Config {
 
     private static String[] DEF_EXCLUDED_STRUCTURES_ISLANDS = new String[]{
             "minecraft:ocean_monuments",
+            "minecraft:ancient_cities",
             "minecraft:mineshafts"
     };
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
@@ -27,6 +28,8 @@ public class Config {
     private static String[] DEF_EXCLUDED_STRUCTURES_VOID = new String[]{
             "minecraft:ocean_monuments",
             "minecraft:mineshafts",
+            "minecraft:ancient_cities",
+            "minecraft:villages",
             "minecraft:village_plains",
             "minecraft:village_desert",
             "minecraft:village_savanna",

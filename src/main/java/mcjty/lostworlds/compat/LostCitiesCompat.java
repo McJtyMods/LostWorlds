@@ -38,9 +38,33 @@ public class LostCitiesCompat {
             return sphere;
         }
 
-        // Return true if x,z is in a sphere and also x+15,z+15
+        // Same as findSphere but all four corners have to be in the sphere
+        private ILostSphere findSphereFull(int x, int z) {
+            ILostSphere sphere = info.getSphere(x, z);
+            if (sphere != null) {
+                sphere = info.getSphere(x + 15, z);
+                if (sphere != null) {
+                    sphere = info.getSphere(x, z + 15);
+                    if (sphere != null) {
+                        sphere = info.getSphere(x + 15, z + 15);
+                    }
+                }
+            }
+            return sphere;
+        }
+
+        // Return true if x,z is in a sphere or also x+15,z+15
         public boolean isInSphere(int x, int z) {
             ILostSphere sphere = findSphere(x, z);
+            if (sphere != null) {
+                return true;
+            }
+            return false;
+        }
+
+        // Return true if x,z is in a sphere and also x+15,z+15
+        public boolean isInSphereFull(int x, int z) {
+            ILostSphere sphere = findSphereFull(x, z);
             if (sphere != null) {
                 return true;
             }
