@@ -31,6 +31,5 @@ public class LostWorlds {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             bus.addListener(ClientSetup::onRegisterDimensionSpecialEffectsEvent);
         });
-
     }
 }

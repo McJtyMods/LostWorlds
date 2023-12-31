@@ -19,9 +19,11 @@ import net.minecraftforge.network.NetworkDirection;
 public class EventHandlers {
 
     private final static ResourceKey<WorldPreset> LOST_WORLD_PRESET = ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(LostWorlds.MODID, "lost_worlds"));
+    private final static ResourceKey<WorldPreset> LOST_WORLD_WASTES_PRESET = ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(LostWorlds.MODID, "lost_worlds_wastes"));
 
     public static void onRegisterPresetEditorsEvent(RegisterPresetEditorsEvent event) {
-        event.register(LOST_WORLD_PRESET, new LWPresetEditor());
+        event.register(LOST_WORLD_PRESET, new LWPresetEditor(false));
+        event.register(LOST_WORLD_WASTES_PRESET, new LWPresetEditor(true));
     }
 
     public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {

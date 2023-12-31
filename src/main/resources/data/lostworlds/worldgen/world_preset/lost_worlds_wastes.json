@@ -1,0 +1,93 @@
+{
+  "dimensions": {
+    "minecraft:overworld": {
+      "type": "minecraft:overworld",
+      "generator": {
+        "type": "lostworlds:lostworlds",
+        "lwsettings": {
+          "type": "normal",
+          "fog": "None"
+        },
+        "biome_source": {
+          "type": "lostworlds:wasted_biomes",
+          "dimension": "minecraft:overworld",
+          "adapt_biome_source": {
+            "type": "minecraft:multi_noise",
+            "preset": "minecraft:overworld"
+          },
+          "sphere_default": "minecraft:jungle",
+          "default": "minecraft:desert",
+          "mapping": [
+            "minecraft:badlands=minecraft:badlands",
+            "minecraft:bamboo_jungle=minecraft:wooded_badlands",
+            "minecraft:beach=minecraft:beach",
+            "minecraft:birch_forest=minecraft:wooded_badlands",
+            "minecraft:cold_ocean=minecraft:cold_ocean",
+            "minecraft:crimson_forest=minecraft:wooded_badlands",
+            "minecraft:dark_forest=minecraft:wooded_badlands",
+            "minecraft:deep_dark=minecraft:deep_dark",
+            "minecraft:deep_frozen_ocean=minecraft:deep_frozen_ocean",
+            "minecraft:deep_lukewarm_ocean=minecraft:deep_lukewarm_ocean",
+            "minecraft:deep_ocean=minecraft:deep_ocean",
+            "minecraft:dripstone_caves=minecraft:dripstone_caves",
+            "minecraft:end_barrens=minecraft:end_barrens",
+            "minecraft:end_highlands=minecraft:end_highlands",
+            "minecraft:end_midlands=minecraft:end_midlands",
+            "minecraft:eroded_badlands=minecraft:eroded_badlands",
+            "minecraft:flower_forest=minecraft:wooded_badlands",
+            "minecraft:forest=minecraft:wooded_badlands",
+            "minecraft:frozen_ocean=minecraft:frozen_ocean",
+            "minecraft:frozen_peaks=minecraft:frozen_peaks",
+            "minecraft:frozen_river=minecraft:frozen_river",
+            "minecraft:ice_spikes=minecraft:ice_spikes",
+            "minecraft:jagged_peaks=minecraft:jagged_peaks",
+            "minecraft:jungle=minecraft:wooded_badlands",
+            "minecraft:lukewarm_ocean=minecraft:lukewarm_ocean",
+            "minecraft:lush_caves=minecraft:dripstone_caves",
+            "minecraft:nether_wastes=minecraft:nether_wastes",
+            "minecraft:ocean=minecraft:ocean",
+            "minecraft:old_growth_birch_forest=minecraft:wooded_badlands",
+            "minecraft:old_growth_pine_taiga=minecraft:wooded_badlands",
+            "minecraft:old_growth_spruce_taiga=minecraft:wooded_badlands",
+            "minecraft:savanna=minecraft:savanna",
+            "minecraft:savanna_plateau=minecraft:savanna_plateau",
+            "minecraft:small_end_islands=minecraft:small_end_islands",
+            "minecraft:soul_sand_valley=minecraft:soul_sand_valley",
+            "minecraft:stony_peaks=minecraft:windswept_gravelly_hills",
+            "minecraft:the_end=minecraft:the_end",
+            "minecraft:the_void=minecraft:the_void",
+            "minecraft:warm_ocean=minecraft:warm_ocean",
+            "minecraft:warped_forest=minecraft:wooded_badlands",
+            "minecraft:windswept_forest=minecraft:wooded_badlands",
+            "minecraft:windswept_gravelly_hills=minecraft:windswept_gravelly_hills",
+            "minecraft:windswept_hills=minecraft:windswept_hills",
+            "minecraft:windswept_savanna=minecraft:windswept_savanna",
+            "minecraft:wooded_badlands=minecraft:wooded_badlands"
+          ]
+        },
+        "settings": "lostworlds:lost_islands"
+      }
+    },
+    "minecraft:the_end": {
+      "type": "minecraft:the_end",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:the_end"
+        },
+        "settings": "minecraft:end"
+      }
+    },
+    "minecraft:the_nether": {
+      "type": "minecraft:the_nether",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:multi_noise",
+          "preset": "minecraft:nether"
+        },
+        "settings": "minecraft:nether"
+      }
+    }
+  }
+}

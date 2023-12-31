@@ -8,5 +8,8 @@
     "createWorld.customize.lostworlds.islandswater": "IslandsW",
     "createWorld.customize.lostworlds.spheres.description": "Play in a void world filled with spheres. In combination with Lost Cities you can have this void populated with spheres containing cities. Use this in combination with the Lost Cities 'space' profile",
     "createWorld.customize.lostworlds.spheres": "Spheres",
-    "generator.lostworlds.lost_worlds": "Lost Worlds"
+    "createWorld.customize.lostworlds.normal.description": "This is a normal world except that it allows you to play in a wasteland if you select the 'Wastes' world type. Use this in combination with the Lost Cities 'biosphere' profile",
+    "createWorld.customize.lostworlds.normal": "Normal",
+    "generator.lostworlds.lost_worlds": "Lost Worlds",
+    "generator.lostworlds.lost_worlds_wastes": "Lost Worlds (Wastes)"
 }
