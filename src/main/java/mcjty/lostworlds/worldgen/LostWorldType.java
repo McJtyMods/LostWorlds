@@ -18,8 +18,8 @@ public enum LostWorldType implements StringRepresentable {
         return excluded.contains(key);
     }),
     CAVES("caves", key -> false),
-    VOID("void", key -> {
-        Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresVoid();
+    SPHERES("spheres", key -> {
+        Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresSpheres();
         return excluded.contains(key);
     });
 

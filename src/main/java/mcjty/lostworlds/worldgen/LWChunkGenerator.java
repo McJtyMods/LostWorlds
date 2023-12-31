@@ -32,8 +32,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public class LWChunkGenerator extends NoiseBasedChunkGenerator {
 
@@ -41,7 +39,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
     public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islands"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS_WATER = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islandswater"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_caves"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_VOID = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_void"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_spheres"));
     public static final float GROUND_SCALE = 3.0f;
 
     private final LWSettings lwSettings;
@@ -69,7 +67,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
     @Override
     public ChunkAccess doFill(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
         ChunkPos cp = chunkAccess.getPos();
-        if (lwSettings.type() == LostWorldType.VOID) {
+        if (lwSettings.type() == LostWorldType.SPHERES) {
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
             cachedLevel = region.getLevel();
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
@@ -140,7 +138,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState random) {
-        if (lwSettings.type() == LostWorldType.VOID && cachedLevel != null) {
+        if (lwSettings.type() == LostWorldType.SPHERES && cachedLevel != null) {
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(cachedLevel);
             if (context != null) {
                 if (!context.isInSphere(x << 4, z << 4)) {
@@ -154,7 +152,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
     // We override buildSurface because there is some hardcoded badlands stuff that is done here and we don't want that
     @Override
     public void buildSurface(ChunkAccess chunkAccess, WorldGenerationContext wgContext, RandomState random, StructureManager structureManager, BiomeManager biomeManager, Registry<Biome> biomes, Blender blender) {
-        if (lwSettings.type() == LostWorldType.VOID) {
+        if (lwSettings.type() == LostWorldType.SPHERES) {
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
             cachedLevel = region.getLevel();
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());

@@ -32,13 +32,13 @@ public class LWScreen extends Screen {
     private final static SelectedSetting ISLANDS = new SelectedSetting(LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description");
     private final static SelectedSetting ISLANDSWATER = new SelectedSetting(LWChunkGenerator.LOST_ISLANDS_WATER, "icon_islandswater.png", "createWorld.customize.lostworlds.islandswater.description");
     private final static SelectedSetting CAVES = new SelectedSetting(LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description");
-    private final static SelectedSetting VOID = new SelectedSetting(LWChunkGenerator.LOST_VOID, "icon_void.png", "createWorld.customize.lostworlds.void.description");
+    private final static SelectedSetting SPHERES = new SelectedSetting(LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
     private Button islandswaterButton;
     private Button cavesButton;
-    private Button voidButton;
+    private Button spheresButton;
 
     private CycleButton<FogColor> fogColorButton;
 
@@ -62,8 +62,8 @@ public class LWScreen extends Screen {
         cavesButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.caves"), (button) -> {
             selected = CAVES;
         }).bounds(170, this.height - 52, 70, 20).build());
-        voidButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.void"), (button) -> {
-            selected = VOID;
+        spheresButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.spheres"), (button) -> {
+            selected = SPHERES;
         }).bounds(250, this.height - 52, 70, 20).build());
 
         fogColorButton = addRenderableWidget(CycleButton.builder((FogColor t) -> Component.literal(t.getSerializedName()))
@@ -91,7 +91,7 @@ public class LWScreen extends Screen {
         } else if (selected == CAVES) {
             type = LostWorldType.CAVES;
         } else {
-            type = LostWorldType.VOID;
+            type = LostWorldType.SPHERES;
         }
         return new LWSettings(type, fogColorButton.getValue());
     }
@@ -105,7 +105,7 @@ public class LWScreen extends Screen {
         islandsButton.setFGColor(selected == ISLANDS ? 0x0044ff44 : 0x00aaaaaa);
         islandswaterButton.setFGColor(selected == ISLANDSWATER ? 0x0044ff44 : 0x00aaaaaa);
         cavesButton.setFGColor(selected == CAVES ? 0x0044ff44 : 0x00aaaaaa);
-        voidButton.setFGColor(selected == VOID ? 0x0044ff44 : 0x00aaaaaa);
+        spheresButton.setFGColor(selected == SPHERES ? 0x0044ff44 : 0x00aaaaaa);
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
         graphics.drawWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,16777215);
         graphics.blit(new ResourceLocation(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40,  100, 100, 0, 0, 128, 128, 128, 128);

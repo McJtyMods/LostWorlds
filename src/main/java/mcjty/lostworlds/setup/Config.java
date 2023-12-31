@@ -25,7 +25,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
     private static Set<ResourceKey<StructureSet>> exludedStructuresIslands = null;
 
-    private static String[] DEF_EXCLUDED_STRUCTURES_VOID = new String[]{
+    private static String[] DEF_EXCLUDED_STRUCTURES_SPHERES = new String[]{
             "minecraft:ocean_monuments",
             "minecraft:mineshafts",
             "minecraft:ancient_cities",
@@ -36,8 +36,8 @@ public class Config {
             "minecraft:village_snowy",
             "minecraft:village_taiga"
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_VOID;
-    private static Set<ResourceKey<StructureSet>> exludedStructuresVoid = null;
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_SPHERES;
+    private static Set<ResourceKey<StructureSet>> exludedStructuresSpheres = null;
 
     public static void register() {
         ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
@@ -46,9 +46,9 @@ public class Config {
         EXCLUDED_STRUCTURES_ISLANDS = COMMON_BUILDER
                 .comment("A list of structures that should not generate on lost_islands worlds")
                 .defineList("excludedStructuresIslands", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_ISLANDS), s -> s instanceof String);
-        EXCLUDED_STRUCTURES_VOID = COMMON_BUILDER
-                .comment("A list of structures that should not generate on lost_void worlds")
-                .defineList("excludedStructuresVoid", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_VOID), s -> s instanceof String);
+        EXCLUDED_STRUCTURES_SPHERES = COMMON_BUILDER
+                .comment("A list of structures that should not generate on lost_spheres worlds")
+                .defineList("excludedStructuresSpheres", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_SPHERES), s -> s instanceof String);
 
         COMMON_BUILDER.pop();
         ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
@@ -70,19 +70,19 @@ public class Config {
         return exludedStructuresIslands;
     }
 
-    public static Set<ResourceKey<StructureSet>> getExludedStructuresVoid() {
-        if (exludedStructuresVoid == null) {
-            exludedStructuresVoid = new HashSet<>();
-            List<? extends String> strings = EXCLUDED_STRUCTURES_VOID.get();
+    public static Set<ResourceKey<StructureSet>> getExludedStructuresSpheres() {
+        if (exludedStructuresSpheres == null) {
+            exludedStructuresSpheres = new HashSet<>();
+            List<? extends String> strings = EXCLUDED_STRUCTURES_SPHERES.get();
             for (String s : strings) {
                 ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(s));
                 if (key == null) {
                     throw new RuntimeException("Unknown structure set: " + s);
                 }
-                exludedStructuresVoid.add(key);
+                exludedStructuresSpheres.add(key);
             }
         }
-        return exludedStructuresVoid;
+        return exludedStructuresSpheres;
     }
 
 }
