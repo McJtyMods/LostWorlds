@@ -6,7 +6,8 @@
         "type": "lostworlds:lostworlds",
         "lwsettings": {
           "type": "normal",
-          "fog": "None"
+          "fog": "None",
+          "sea_level": -64
         },
         "biome_source": {
           "type": "lostworlds:wasted_biomes",

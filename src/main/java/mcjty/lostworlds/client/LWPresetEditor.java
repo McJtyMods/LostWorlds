@@ -2,6 +2,7 @@ package mcjty.lostworlds.client;
 
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import mcjty.lostworlds.worldgen.LWSettings;
+import mcjty.lostworlds.worldgen.LostWorldType;
 import mcjty.lostworlds.worldgen.wastes.WastesBiomeSource;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
@@ -36,8 +37,9 @@ public class LWPresetEditor implements PresetEditor {
         HolderGetter<NoiseGeneratorSettings> noisegetter = registryaccess.lookupOrThrow(Registries.NOISE_SETTINGS);
         return new LWScreen(worldScreen, noisegetter, (settings, lwSettings) -> {
             worldScreen.getUiState().updateDimensions(lostWorldsConfigurator(settings, lwSettings));
-        }, chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator)chunkgenerator).generatorSettings().get()
-                : NoiseGeneratorSettings.dummy());
+        }, chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).generatorSettings().get()
+                : NoiseGeneratorSettings.dummy(),
+                chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).getLwSettings() : new LWSettings(LostWorldType.ISLANDS, null, null));
     }
 
 

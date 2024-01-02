@@ -105,7 +105,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         } else {
             chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
         }
-        if (lwSettings.type() == LostWorldType.ISLANDS_WATER) {
+        if (lwSettings.type() == LostWorldType.ISLANDS && lwSettings.seaLevel() != null) {
             int chunkX = cp.x;
             int chunkZ = cp.z;
             this.groundBuffer = this.groundNoise.getRegion(this.groundBuffer, (chunkX * 16), (chunkZ * 16), 16, 16, 1.0 / 16.0, 1.0 / 16.0, 1.0D);
@@ -114,17 +114,18 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
 
             BlockState defaultBlock = generatorSettings().get().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+            BlockState water = Blocks.WATER.defaultBlockState();
 
             int minBuildHeight = chunkAccess.getMinBuildHeight();
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     double vr = -15 + groundBuffer[x + z * 16] / GROUND_SCALE;
-                    for (int y = minBuildHeight; y <= getSeaLevel(); ++y) {
+                    for (int y = minBuildHeight; y <= lwSettings.seaLevel(); ++y) {
                         BlockState b;
                         if (y < vr) {
                             b = y < (minBuildHeight + 2) ? bedrock : defaultBlock;
                         } else {
-                            b = generatorSettings().get().defaultFluid();
+                            b = water;
                         }
                         LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
                         levelchunksection.setBlockState(x, y & 15, z, b, false);
@@ -272,7 +273,6 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
             return false;
         }
     }
-
 
     @Override
     protected Codec<? extends ChunkGenerator> codec() {
