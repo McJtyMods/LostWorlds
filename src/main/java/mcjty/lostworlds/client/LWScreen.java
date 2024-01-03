@@ -34,17 +34,16 @@ public class LWScreen extends Screen {
     private LWSettings lwSettings;
     private final HolderGetter<NoiseGeneratorSettings> noisegetter;
 
-    record SelectedSetting(ResourceKey<NoiseGeneratorSettings> settingsKey, String iconName, String description) {}
+    record SelectedSetting(LostWorldType type, ResourceKey<NoiseGeneratorSettings> settingsKey, String iconName, String description) {}
 
-    private final static SelectedSetting NORMAL = new SelectedSetting(LWChunkGenerator.LOST_NORMAL, "icon_normal.png", "createWorld.customize.lostworlds.normal.description");
-    private final static SelectedSetting ISLANDS = new SelectedSetting(LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description");
-    private final static SelectedSetting CAVES = new SelectedSetting(LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description");
-    private final static SelectedSetting SPHERES = new SelectedSetting(LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description");
+    private final static SelectedSetting NORMAL = new SelectedSetting(LostWorldType.NORMAL, LWChunkGenerator.LOST_NORMAL, "icon_normal.png", "createWorld.customize.lostworlds.normal.description");
+    private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description");
+    private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description");
+    private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
     private Button normalButton;
-    private Button islandswaterButton;
     private Button cavesButton;
     private Button spheresButton;
 
@@ -113,17 +112,7 @@ public class LWScreen extends Screen {
 
     @NotNull
     private LWSettings createNewLwSettings() {
-        LostWorldType type;
-        if (selected == ISLANDS) {
-            type = LostWorldType.ISLANDS;
-        } else if (selected == CAVES) {
-            type = LostWorldType.CAVES;
-        } else if (selected == SPHERES) {
-            type = LostWorldType.SPHERES;
-        } else {
-            type = LostWorldType.NORMAL;
-        }
-        return new LWSettings(type, fogColorButton.getValue(),
+        return new LWSettings(selected.type(), fogColorButton.getValue(),
                 seaLevelSlider.getValue() == -64 ? null : (int) seaLevelSlider.getValue());
     }
 
@@ -137,6 +126,7 @@ public class LWScreen extends Screen {
         cavesButton.setFGColor(selected == CAVES ? 0x0044ff44 : 0x00aaaaaa);
         spheresButton.setFGColor(selected == SPHERES ? 0x0044ff44 : 0x00aaaaaa);
         normalButton.setFGColor(selected == NORMAL ? 0x0044ff44 : 0x00aaaaaa);
+        seaLevelSlider.active = selected.type.supportsCustomSea();
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
         graphics.drawWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,16777215);
         graphics.blit(new ResourceLocation(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40,  100, 100, 0, 0, 128, 128, 128, 128);
