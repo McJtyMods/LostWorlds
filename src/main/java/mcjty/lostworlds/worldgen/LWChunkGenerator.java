@@ -68,45 +68,54 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
     @Override
     public ChunkAccess doFill(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
         ChunkPos cp = chunkAccess.getPos();
-        if (lwSettings.type().supportsCustomSea() && lwSettings.seaLevel() != null) {
-            fillCustomSea(chunkAccess, cp);
-        }
         if (lwSettings.type() == LostWorldType.SPHERES) {
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
             cachedLevel = region.getLevel();
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
             // Only generate the chunk if we have Lost Cities and we are in a sphere
-            if (context != null) {
-                if (context.isInSphere(cp.getMinBlockX(), cp.getMinBlockZ())) {
-                    chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
-                    int minBuildHeight = chunkAccess.getMinBuildHeight();
-                    int maxBuildHeight = chunkAccess.getMaxBuildHeight();
-                    int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-                    int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-                    BlockState air = Blocks.AIR.defaultBlockState();
-                    for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
-                        if (y >= minSphereY && y <= maxSphereY) {
-                            LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                            for (int x = 0; x < 16; ++x) {
-                                for (int z = 0; z < 16; ++z) {
-                                    if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                                        levelchunksection.setBlockState(x, y & 15, z, air, false);
-                                    }
+            if (context != null && context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
+                chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+                int minBuildHeight = chunkAccess.getMinBuildHeight();
+                int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+                int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+                int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+                BlockState air = Blocks.AIR.defaultBlockState();
+                BlockState water;
+                if (lwSettings.hasCustomSea()) {
+                    water = Blocks.WATER.defaultBlockState();
+                } else {
+                    water = air;
+                }
+                int level = lwSettings.seaLevel() == null ? -63 : lwSettings.seaLevel();
+                for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
+                    if (y >= minSphereY && y <= maxSphereY) {
+                        LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                        for (int x = 0; x < 16; ++x) {
+                            for (int z = 0; z < 16; ++z) {
+                                if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
+                                    levelchunksection.setBlockState(x, y & 15, z, y <= level ? water : air, false);
                                 }
                             }
-                        } else {
-                            LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                            for (int x = 0; x < 16; ++x) {
-                                for (int z = 0; z < 16; ++z) {
-                                    levelchunksection.setBlockState(x, y & 15, z, air, false);
-                                }
+                        }
+                    } else {
+                        LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                        for (int x = 0; x < 16; ++x) {
+                            for (int z = 0; z < 16; ++z) {
+                                levelchunksection.setBlockState(x, y & 15, z, y <= level ? water : air, false);
                             }
                         }
                     }
                 }
+            } else {
+                if (lwSettings.hasCustomSea()) {
+                    fillCustomSea(chunkAccess, cp);
+                }
             }
         } else {
             chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+            if (lwSettings.hasCustomSea()) {
+                fillCustomSea(chunkAccess, cp);
+            }
         }
         return chunkAccess;
     }
@@ -147,7 +156,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         if (lwSettings.type() == LostWorldType.SPHERES && cachedLevel != null) {
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(cachedLevel);
             if (context != null) {
-                if (!context.isInSphere(x << 4, z << 4)) {
+                if (!context.isInSphereFullOrPartially(x << 4, z << 4)) {
                     return level.getMinBuildHeight();
                 }
             }
@@ -168,7 +177,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
                 if (context.isInSphereFull(cp.getMinBlockX(), cp.getMinBlockZ())) {
                     // We are fully in the sphere. Just generate the chunk as normal
                     super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
-                } else if (context.isInSphere(cp.getMinBlockX(), cp.getMinBlockZ())) {
+                } else if (context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
                     // We are partially in the sphere. Generate the chunk but remove blocks that are outside the sphere
                     super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
                     int minBuildHeight = chunkAccess.getMinBuildHeight();

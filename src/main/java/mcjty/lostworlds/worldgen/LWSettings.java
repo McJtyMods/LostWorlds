@@ -13,4 +13,7 @@ public record LWSettings(LostWorldType type, FogColor fogColor, Integer seaLevel
                     Codec.intRange(-64, 384).optionalFieldOf("sea_level").forGetter(s -> Optional.ofNullable(s.seaLevel())))
             .apply(instance, instance.stable((tp, fc, wl) -> new LWSettings(tp, fc, wl.orElse(null)))));
 
+    public boolean hasCustomSea() {
+        return type.supportsCustomSea() && this.seaLevel != null;
+    }
 }

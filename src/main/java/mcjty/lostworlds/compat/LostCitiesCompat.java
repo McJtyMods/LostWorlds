@@ -75,7 +75,7 @@ public class LostCitiesCompat {
         }
 
         // Return true if x,z is in a sphere or also x+15,z+15
-        public boolean isInSphere(int x, int z) {
+        public boolean isInSphereFullOrPartially(int x, int z) {
             ILostSphere sphere = findSphere(x, z);
             if (sphere != null) {
                 return true;
