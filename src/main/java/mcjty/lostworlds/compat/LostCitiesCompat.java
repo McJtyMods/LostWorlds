@@ -77,19 +77,13 @@ public class LostCitiesCompat {
         // Return true if x,z is in a sphere or also x+15,z+15
         public boolean isInSphereFullOrPartially(int x, int z) {
             ILostSphere sphere = findSphere(x, z);
-            if (sphere != null) {
-                return true;
-            }
-            return false;
+            return sphere != null;
         }
 
         // Return true if x,z is in a sphere and also x+15,z+15
         public boolean isInSphereFull(int x, int z) {
             ILostSphere sphere = findSphereFull(x, z);
-            if (sphere != null) {
-                return true;
-            }
-            return false;
+            return sphere != null;
         }
 
         public boolean isInSphere(int x, int y, int z) {

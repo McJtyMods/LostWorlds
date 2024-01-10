@@ -68,7 +68,13 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
     @Override
     public ChunkAccess doFill(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
         ChunkPos cp = chunkAccess.getPos();
+        if (cp.x == 4 && cp.z == -4) {
+            System.out.println("LWChunkGenerator.doFill");
+        }
         if (lwSettings.type() == LostWorldType.SPHERES) {
+            if (lwSettings.hasCustomSea()) {
+                fillCustomSea(chunkAccess, cp);
+            }
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
             cachedLevel = region.getLevel();
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
@@ -88,12 +94,13 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
                 }
                 int level = lwSettings.seaLevel() == null ? -63 : lwSettings.seaLevel();
                 for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
+                    BlockState block = y <= level ? water : air;
                     if (y >= minSphereY && y <= maxSphereY) {
                         LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
                         for (int x = 0; x < 16; ++x) {
                             for (int z = 0; z < 16; ++z) {
                                 if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                                    levelchunksection.setBlockState(x, y & 15, z, y <= level ? water : air, false);
+                                    levelchunksection.setBlockState(x, y & 15, z, block, false);
                                 }
                             }
                         }
@@ -101,14 +108,10 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
                         LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
                         for (int x = 0; x < 16; ++x) {
                             for (int z = 0; z < 16; ++z) {
-                                levelchunksection.setBlockState(x, y & 15, z, y <= level ? water : air, false);
+                                levelchunksection.setBlockState(x, y & 15, z, block, false);
                             }
                         }
                     }
-                }
-            } else {
-                if (lwSettings.hasCustomSea()) {
-                    fillCustomSea(chunkAccess, cp);
                 }
             }
         } else {
@@ -285,6 +288,14 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int getSeaLevel() {
+        if (lwSettings.hasCustomSea()) {
+            return lwSettings.seaLevel();
+        }
+        return super.getSeaLevel();
     }
 
     @Override
