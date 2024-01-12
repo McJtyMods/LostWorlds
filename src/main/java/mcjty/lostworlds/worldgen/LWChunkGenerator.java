@@ -142,6 +142,11 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator {
         return (int) vr;
     }
 
+    @Override
+    public void applyCarvers(WorldGenRegion pLevel, long pSeed, RandomState pRandom, BiomeManager pBiomeManager, StructureManager pStructureManager, ChunkAccess pChunk, GenerationStep.Carving pStep) {
+        // @todo intersect with spheres
+    }
+
     private void fillCustomSea(ChunkAccess chunkAccess, ChunkPos cp) {
         Heightmap heightmap = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
         Heightmap heightmap1 = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
