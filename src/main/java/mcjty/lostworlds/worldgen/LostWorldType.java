@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 public enum LostWorldType implements StringRepresentable {
     NORMAL("normal", key -> false, false),
+    ATLANTIS("atlantis", key -> false, false),
     ISLANDS("islands", key -> {
         Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresIslands();
         return excluded.contains(key);
