@@ -24,11 +24,11 @@ public class LostWorlds {
         Config.register();
         Registration.init();
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        bus.addListener(EventHandlers::onRegisterPresetEditorsEvent);
         bus.addListener(setup::init);
         MinecraftForge.EVENT_BUS.addListener(EventHandlers::onPlayerLoggedInEvent);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            bus.addListener(ClientSetup::onRegisterPresetEditorsEvent);
             bus.addListener(ClientSetup::onRegisterDimensionSpecialEffectsEvent);
         });
     }
