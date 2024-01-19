@@ -6,8 +6,7 @@
         "type": "lostworlds:lostworlds",
         "lwsettings": {
           "type": "spheres",
-          "fog": "None",
-          "sea_level": -64
+          "fog": "None"
         },
         "biome_source": {
           "type": "minecraft:multi_noise",
