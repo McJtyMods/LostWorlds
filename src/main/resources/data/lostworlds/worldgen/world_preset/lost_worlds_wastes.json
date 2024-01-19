@@ -66,7 +66,7 @@
             "minecraft:wooded_badlands=minecraft:wooded_badlands"
           ]
         },
-        "settings": "lostworlds:lost_islands"
+        "settings": "lostworlds:lost_normal"
       }
     },
     "minecraft:the_end": {

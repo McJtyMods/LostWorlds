@@ -13,7 +13,7 @@
           "type": "minecraft:multi_noise",
           "preset": "minecraft:overworld"
         },
-        "settings": "lostworlds:lost_islands"
+        "settings": "lostworlds:lost_caves"
       }
     },
     "minecraft:the_end": {
