@@ -93,7 +93,7 @@ public class LWScreen extends Screen {
                 .withValues(FogColor.values())
                 .create(10, 80, 70, 20, Component.literal("Fog")));
         fogColorButton.setValue(lwSettings.fogColor());
-        seaLevelSlider = addRenderableWidget(new ForgeSlider(10, 110, 150, 20, Component.literal("Sea "), Component.literal(""), -64, 384, 0, 1, 1, true) {
+        seaLevelSlider = addRenderableWidget(new ForgeSlider(10, 110, 220, 20, Component.literal("Sea "), Component.literal(""), -64, 384, 0, 1, 1, true) {
             @Override
             public String getValueString() {
                 if (this.getValue() == -64) {
