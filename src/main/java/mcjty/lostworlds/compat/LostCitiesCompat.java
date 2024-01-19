@@ -37,6 +37,13 @@ public class LostCitiesCompat {
     }
 
 
+    public static void setProfile(String profile) {
+        if (!hasLostCities) {
+            return;
+        }
+        lostCities.setOverworldProfile(profile);
+    }
+
     public static class LostCitiesContext {
         private final ILostCityInformation info;
 

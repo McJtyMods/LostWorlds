@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import mcjty.lostworlds.LostWorlds;
+import mcjty.lostworlds.compat.LostCitiesCompat;
 import mcjty.lostworlds.setup.ModSetup;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
@@ -34,13 +35,13 @@ public class LWScreen extends Screen {
     private LWSettings lwSettings;
     private final HolderGetter<NoiseGeneratorSettings> noisegetter;
 
-    record SelectedSetting(LostWorldType type, ResourceKey<NoiseGeneratorSettings> settingsKey, String iconName, String description) {}
+    record SelectedSetting(LostWorldType type, ResourceKey<NoiseGeneratorSettings> settingsKey, String iconName, String description, String profile) {}
 
-    private final static SelectedSetting NORMAL = new SelectedSetting(LostWorldType.NORMAL, LWChunkGenerator.LOST_NORMAL, "icon_normal.png", "createWorld.customize.lostworlds.normal.description");
-    private final static SelectedSetting ATLANTIS = new SelectedSetting(LostWorldType.ATLANTIS, LWChunkGenerator.LOST_ATLANTIS, "icon_atlantis.png", "createWorld.customize.lostworlds.atlantis.description");
-    private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description");
-    private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description");
-    private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description");
+    private final static SelectedSetting NORMAL = new SelectedSetting(LostWorldType.NORMAL, LWChunkGenerator.LOST_NORMAL, "icon_normal.png", "createWorld.customize.lostworlds.normal.description", "biosphere");
+    private final static SelectedSetting ATLANTIS = new SelectedSetting(LostWorldType.ATLANTIS, LWChunkGenerator.LOST_ATLANTIS, "icon_atlantis.png", "createWorld.customize.lostworlds.atlantis.description", "atlantis");
+    private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description", "floating");
+    private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description", "caves");
+    private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description", "space");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
@@ -109,6 +110,7 @@ public class LWScreen extends Screen {
             LWSettings lwSettings = createNewLwSettings();
             this.applySettings.accept(this.generator, lwSettings);
             this.minecraft.setScreen(this.parent);
+            LostCitiesCompat.setProfile(selected.profile());
         }).bounds(this.width - 130, this.height - 28, 50, 20).build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
             this.minecraft.setScreen(this.parent);
