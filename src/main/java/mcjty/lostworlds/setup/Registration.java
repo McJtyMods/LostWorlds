@@ -10,6 +10,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.function.Supplier;
+
 import static mcjty.lostworlds.LostWorlds.MODID;
 
 public class Registration {
@@ -21,5 +23,5 @@ public class Registration {
         BIOMESOURCE_REGISTRY.register(bus);
     }
 
-    public static final RegistryObject<Codec<WastesBiomeSource>> WASTED_BIOME_SOURCE = BIOMESOURCE_REGISTRY.register("wasted_biomes", () -> WastesBiomeSource.CODEC);
+    public static final Supplier<Codec<WastesBiomeSource>> WASTED_BIOME_SOURCE = BIOMESOURCE_REGISTRY.register("wasted_biomes", () -> WastesBiomeSource.CODEC);
 }

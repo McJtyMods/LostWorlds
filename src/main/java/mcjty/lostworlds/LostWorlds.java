@@ -10,6 +10,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 @Mod(LostWorlds.MODID)
 public class LostWorlds {
@@ -20,16 +21,18 @@ public class LostWorlds {
     public static LostWorlds instance;
 
     public LostWorlds() {
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        Dist dist = FMLEnvironment.dist;
+
         instance = this;
         Config.register();
         Registration.init();
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(setup::init);
         MinecraftForge.EVENT_BUS.addListener(EventHandlers::onPlayerLoggedInEvent);
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+        if (dist.isClient()) {
             bus.addListener(ClientSetup::onRegisterPresetEditorsEvent);
             bus.addListener(ClientSetup::onRegisterDimensionSpecialEffectsEvent);
-        });
+        }
     }
 }
