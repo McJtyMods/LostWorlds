@@ -7,7 +7,6 @@ import mcjty.lostworlds.setup.Registration;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -26,7 +25,7 @@ public class LostWorlds {
 
         instance = this;
         Config.register();
-        Registration.init();
+        Registration.init(bus);
         bus.addListener(setup::init);
         MinecraftForge.EVENT_BUS.addListener(EventHandlers::onPlayerLoggedInEvent);
 
