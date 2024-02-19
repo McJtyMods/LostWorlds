@@ -18,9 +18,9 @@ public class EventHandlers {
             if (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
                 LostWorldType type = generator.getLwSettings().type();
                 FogColor fogColor = generator.getLwSettings().fogColor();
-                Messages.INSTANCE.sendTo(new PacketWorldInfoToClient(type, fogColor), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor), player);
             } else {
-                Messages.INSTANCE.sendTo(new PacketWorldInfoToClient(LostWorldType.ISLANDS, FogColor.NONE), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.ISLANDS, FogColor.NONE), player);
             }
         }
     }
