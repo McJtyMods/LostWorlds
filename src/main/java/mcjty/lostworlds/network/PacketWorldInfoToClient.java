@@ -4,7 +4,7 @@ import mcjty.lostworlds.client.LostWorldsSpecialEffects;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 

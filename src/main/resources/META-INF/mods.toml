@@ -1,6 +1,10 @@
 modLoader="javafml" #mandatory
 loaderVersion="[47,)"
 license="MIT License https://github.com/McJtyMods/LostWorlds/blob/main/LICENSE"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
 [[mods]]
 modId="lostworlds"
 version="${file.jarVersion}"

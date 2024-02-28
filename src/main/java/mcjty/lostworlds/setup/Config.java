@@ -5,9 +5,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.fml.ModLoadingContext;
+import net.neoforged.neoforge.fml.config.ModConfig;
 
 import java.util.HashSet;
 import java.util.List;

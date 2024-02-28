@@ -7,8 +7,8 @@ import mcjty.lostworlds.worldgen.LostWorldType;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.network.NetworkDirection;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.NetworkDirection;
 
 public class EventHandlers {
 
