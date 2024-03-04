@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import mcjty.lostworlds.worldgen.wastes.WastesBiomeSource;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.neoforged.neoforge.eventbus.api.IEventBus;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;

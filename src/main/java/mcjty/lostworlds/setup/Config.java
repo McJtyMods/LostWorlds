@@ -5,7 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
-import net.neoforged.neoforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.fml.ModLoadingContext;
 import net.neoforged.neoforge.fml.config.ModConfig;
 
@@ -22,7 +22,7 @@ public class Config {
             "minecraft:ancient_cities",
             "minecraft:mineshafts"
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
     private static Set<ResourceKey<StructureSet>> exludedStructuresIslands = null;
 
     private static String[] DEF_EXCLUDED_STRUCTURES_SPHERES = new String[]{
@@ -36,11 +36,11 @@ public class Config {
             "minecraft:village_snowy",
             "minecraft:village_taiga"
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_SPHERES;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_SPHERES;
     private static Set<ResourceKey<StructureSet>> exludedStructuresSpheres = null;
 
     public static void register() {
-        ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder COMMON_BUILDER = new ModConfigSpec.Builder();
         COMMON_BUILDER.comment("General settings").push(CATEGORY_GENERAL);
 
         EXCLUDED_STRUCTURES_ISLANDS = COMMON_BUILDER
@@ -51,7 +51,7 @@ public class Config {
                 .defineList("excludedStructuresSpheres", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_SPHERES), s -> s instanceof String);
 
         COMMON_BUILDER.pop();
-        ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
+        ModConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
     }
 

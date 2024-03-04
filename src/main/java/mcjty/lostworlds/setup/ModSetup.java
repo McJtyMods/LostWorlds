@@ -5,7 +5,7 @@ import mcjty.lostworlds.worldgen.IslandsDensityFunction;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
