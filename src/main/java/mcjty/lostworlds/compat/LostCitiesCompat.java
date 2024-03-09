@@ -5,8 +5,8 @@ import mcjty.lostcities.api.ILostCityInformation;
 import mcjty.lostcities.api.ILostSphere;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.fml.InterModComms;
-import net.neoforged.neoforge.fml.ModList;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.ModList;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
