@@ -20,7 +20,7 @@ public class LostWorldsSpecialEffects extends DimensionSpecialEffects {
 
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 color, float brightness) {
-        if (fogColor == FogColor.NONE) {
+        if (fogColor == FogColor.NONE || fogColor == null) {
             if (type == LostWorldType.ISLANDS || type == LostWorldType.SPHERES || type == LostWorldType.NORMAL || type == LostWorldType.ATLANTIS) {
                 return color.multiply(brightness * 0.94F + 0.06F, brightness * 0.94F + 0.06F, brightness * 0.91F + 0.09F);
             } else {
