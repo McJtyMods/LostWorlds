@@ -19,7 +19,8 @@ public enum LostWorldType implements StringRepresentable {
     SPHERES("spheres", key -> {
         Set<ResourceKey<StructureSet>> excluded = Config.getExludedStructuresSpheres();
         return excluded.contains(key);
-    }, true);
+    }, true),
+    CAVESPHERES("cavespheres", key -> false, false);
 
     private final String name;
     private final Predicate<ResourceKey<StructureSet>> blocksStructure;

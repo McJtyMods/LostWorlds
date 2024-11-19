@@ -10,6 +10,8 @@
     "createWorld.customize.lostworlds.normal": "Normal",
     "createWorld.customize.lostworlds.atlantis.description": "This is a normal world except that everything is floaded (sea level at 90). Use this in combination with the Lost Cities 'atlantis' profile",
     "createWorld.customize.lostworlds.atlantis": "Atlantis",
+    "createWorld.customize.lostworlds.cavespheres": "Cave Spheres",
+    "createWorld.customize.lostworlds.cavespheres.description": "Play in a world filled with caves and spheres. In combination with Lost Cities you can have these caves filled with cities. Use the Lost Cities 'biosphere' profile",
     "generator.lostworlds.lost_worlds": "Lost Worlds",
     "generator.lostworlds.lost_worlds_wastes": "Lost Worlds (Wastes)"
 }

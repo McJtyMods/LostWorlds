@@ -1,11 +1,7 @@
 package mcjty.lostworlds.client;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import mcjty.lostworlds.LostWorlds;
 import mcjty.lostworlds.compat.LostCitiesCompat;
-import mcjty.lostworlds.setup.ModSetup;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import mcjty.lostworlds.worldgen.LWSettings;
@@ -42,6 +38,7 @@ public class LWScreen extends Screen {
     private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description", "floating");
     private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description", "caves");
     private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description", "space");
+    private final static SelectedSetting CAVESPHERES = new SelectedSetting(LostWorldType.CAVESPHERES, LWChunkGenerator.LOST_CAVES, "icon_cavespheres.png", "createWorld.customize.lostworlds.cavespheres.description", "biosphere");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
@@ -49,6 +46,7 @@ public class LWScreen extends Screen {
     private Button cavesButton;
     private Button spheresButton;
     private Button atlantisButton;
+    private Button cavespheresButton;
 
     private CycleButton<FogColor> fogColorButton;
     private ForgeSlider seaLevelSlider;
@@ -82,10 +80,15 @@ public class LWScreen extends Screen {
         atlantisButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.atlantis"), (button) -> {
             selected = ATLANTIS;
         }).bounds(330, this.height - 56, 70, 20).build());
+        cavespheresButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.cavespheres"), (button) -> {
+            selected = CAVESPHERES;
+        }).bounds(410, this.height - 56, 70, 20).build());
         selected = switch (lwSettings.type()) {
             case ISLANDS -> ISLANDS;
             case CAVES -> CAVES;
             case SPHERES -> SPHERES;
+            case ATLANTIS -> ATLANTIS;
+            case CAVESPHERES -> CAVESPHERES;
             default -> NORMAL;
         };
 
@@ -134,6 +137,7 @@ public class LWScreen extends Screen {
         spheresButton.setFGColor(selected == SPHERES ? 0x0044ff44 : 0x00aaaaaa);
         normalButton.setFGColor(selected == NORMAL ? 0x0044ff44 : 0x00aaaaaa);
         atlantisButton.setFGColor(selected == ATLANTIS ? 0x0044ff44 : 0x00aaaaaa);
+        cavespheresButton.setFGColor(selected == CAVESPHERES ? 0x0044ff44 : 0x00aaaaaa);
         seaLevelSlider.active = selected.type.supportsCustomSea();
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
         graphics.drawWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,16777215);
