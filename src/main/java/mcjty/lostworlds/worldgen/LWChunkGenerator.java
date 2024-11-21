@@ -42,6 +42,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_spheres"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_NORMAL = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_normal"));
     public static final ResourceKey<NoiseGeneratorSettings> LOST_ATLANTIS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_atlantis"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVESPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_cavespheres"));
     public static final float GROUND_SCALE = 3.0f;
 
     private final LWSettings lwSettings;
@@ -133,13 +134,14 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             cachedLevel = region.getLevel();
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
             int minBuildHeight = chunkAccess.getMinBuildHeight();
+            int maxBuildHeight = chunkAccess.getMaxBuildHeight();
             int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
             int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
             BlockState defaultBlock = generatorSettings().get().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
             BlockState air = Blocks.AIR.defaultBlockState();
 //            int middleY = (minSphereY + maxSphereY) / 2;
-            for (int y = minSphereY; y <= maxSphereY; ++y) {
+            for (int y = Math.max(minBuildHeight, minSphereY); y <= Math.min(maxBuildHeight-1, maxSphereY); ++y) {
 //                BlockState block = y <= middleY ? defaultBlock : air;
                 LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
                 for (int x = 0; x < 16; ++x) {

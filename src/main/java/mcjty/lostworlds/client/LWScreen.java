@@ -38,7 +38,7 @@ public class LWScreen extends Screen {
     private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description", "floating");
     private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description", "caves");
     private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description", "space");
-    private final static SelectedSetting CAVESPHERES = new SelectedSetting(LostWorldType.CAVESPHERES, LWChunkGenerator.LOST_CAVES, "icon_cavespheres.png", "createWorld.customize.lostworlds.cavespheres.description", "biosphere");
+    private final static SelectedSetting CAVESPHERES = new SelectedSetting(LostWorldType.CAVESPHERES, LWChunkGenerator.LOST_CAVESPHERES, "icon_cavespheres.png", "createWorld.customize.lostworlds.cavespheres.description", "biosphere");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
