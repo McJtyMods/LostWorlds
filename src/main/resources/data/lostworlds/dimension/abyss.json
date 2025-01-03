@@ -1,0 +1,15 @@
+{
+	"type": "lostworlds:abyss_type",
+	"generator": {
+		"type": "lostworlds:lostworlds",
+		"settings": "lostworlds:lost_cavespheres",
+		"lwsettings": {
+			"type": "cavespheres",
+			"fog": "None"
+		},
+		"biome_source": {
+			"type": "minecraft:multi_noise",
+			"preset": "overworld"
+		}
+	}
+}

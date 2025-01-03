@@ -67,22 +67,22 @@ public class LWScreen extends Screen {
     protected void init() {
         islandsButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.islands"), (button) -> {
             selected = ISLANDS;
-        }).bounds(10, this.height - 56, 70, 20).build());
+        }).bounds(5, this.height - 56, 65, 20).build());
         cavesButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.caves"), (button) -> {
             selected = CAVES;
-        }).bounds(90, this.height - 56, 70, 20).build());
+        }).bounds(75, this.height - 56, 65, 20).build());
         spheresButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.spheres"), (button) -> {
             selected = SPHERES;
-        }).bounds(170, this.height - 56, 70, 20).build());
+        }).bounds(145, this.height - 56, 65, 20).build());
         normalButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.normal"), (button) -> {
             selected = NORMAL;
-        }).bounds(250, this.height - 56, 70, 20).build());
+        }).bounds(215, this.height - 56, 65, 20).build());
         atlantisButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.atlantis"), (button) -> {
             selected = ATLANTIS;
-        }).bounds(330, this.height - 56, 70, 20).build());
+        }).bounds(285, this.height - 56, 65, 20).build());
         cavespheresButton = addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.lostworlds.cavespheres"), (button) -> {
             selected = CAVESPHERES;
-        }).bounds(410, this.height - 56, 70, 20).build());
+        }).bounds(355, this.height - 56, 65, 20).build());
         selected = switch (lwSettings.type()) {
             case ISLANDS -> ISLANDS;
             case CAVES -> CAVES;

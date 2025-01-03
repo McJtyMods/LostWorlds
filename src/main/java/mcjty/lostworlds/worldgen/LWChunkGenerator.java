@@ -30,6 +30,7 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,49 +72,85 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     public ChunkAccess doFill(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
         ChunkPos cp = chunkAccess.getPos();
         boolean customSea = lwSettings.hasCustomSea();
-        if (customSea) {
+        if (customSea || lwSettings.type() == LostWorldType.CAVESPHERES) {
             this.groundBuffer = this.groundNoise.getRegion(this.groundBuffer, (cp.x * 16), (cp.z * 16), 16, 16, 1.0 / 16.0, 1.0 / 16.0, 1.0D);
         }
 
         if (lwSettings.type() == LostWorldType.SPHERES) {
-            WorldGenRegion region = (WorldGenRegion) structureManager.level;
-            cachedLevel = region.getLevel();
-            LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
-            // Only generate the chunk if we have Lost Cities and we are in a sphere
-            if (context != null && context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
-                chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
-                int minBuildHeight = chunkAccess.getMinBuildHeight();
-                int maxBuildHeight = chunkAccess.getMaxBuildHeight();
-                int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-                int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-                BlockState defaultBlock = generatorSettings().get().defaultBlock();
-                BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
-                BlockState air = Blocks.AIR.defaultBlockState();
-                BlockState water;
-                if (customSea) {
-                    water = Blocks.WATER.defaultBlockState();
-                } else {
-                    water = air;
-                }
-                int level = lwSettings.seaLevel() == null ? -63 : lwSettings.seaLevel();
-                for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
-                    BlockState block = y <= level ? water : air;
+            chunkAccess = doFillSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+        } else if (lwSettings.type() == LostWorldType.CAVESPHERES) {
+            chunkAccess = doFillCaveSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+        } else {
+            chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+            if (customSea) {
+                fillCustomSea(chunkAccess, cp);
+            }
+        }
+        return chunkAccess;
+    }
+
+    private @NotNull ChunkAccess doFillCaveSpheres(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
+        chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+        ChunkPos cp = chunkAccess.getPos();
+        WorldGenRegion region = (WorldGenRegion) structureManager.level;
+        cachedLevel = region.getLevel();
+        LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
+        int minBuildHeight = chunkAccess.getMinBuildHeight();
+        int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+        int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+        int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+        BlockState defaultBlock = generatorSettings().get().defaultBlock();
+        BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+        int middleY = (minSphereY + maxSphereY) / 2;
+        for (int x = 0; x < 16; ++x) {
+            for (int z = 0; z < 16; ++z) {
+                int height = getGroundLevel(x, z) + middleY + 15;
+                for (int y = Math.max(minBuildHeight, minSphereY); y <= Math.min(maxBuildHeight-1, maxSphereY); ++y) {
                     LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                    if (y >= minSphereY && y <= maxSphereY) {
-                        for (int x = 0; x < 16; ++x) {
-                            for (int z = 0; z < 16; ++z) {
-                                if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                                    if (customSea && y < getGroundLevel(x, z)) {
-                                        levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
-                                    } else {
-                                        levelchunksection.setBlockState(x, y & 15, z, block, false);
-                                    }
-                                }
-                            }
+                    if (context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
+                        if (y < height) {
+                            levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
+                        } else {
+                            levelchunksection.setBlockState(x, y & 15, z, air, false);
                         }
-                    } else {
-                        for (int x = 0; x < 16; ++x) {
-                            for (int z = 0; z < 16; ++z) {
+                    }
+                }
+            }
+        }
+        return chunkAccess;
+    }
+
+    private ChunkAccess doFillSpheres(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
+        ChunkPos cp = chunkAccess.getPos();
+        boolean customSea = lwSettings.hasCustomSea();
+        WorldGenRegion region = (WorldGenRegion) structureManager.level;
+        cachedLevel = region.getLevel();
+        LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
+        // Only generate the chunk if we have Lost Cities and we are in a sphere
+        if (context != null && context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
+            chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+            int minBuildHeight = chunkAccess.getMinBuildHeight();
+            int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+            int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+            int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
+            BlockState defaultBlock = generatorSettings().get().defaultBlock();
+            BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+            BlockState air = Blocks.AIR.defaultBlockState();
+            BlockState water;
+            if (customSea) {
+                water = Blocks.WATER.defaultBlockState();
+            } else {
+                water = air;
+            }
+            int level = lwSettings.seaLevel() == null ? -63 : lwSettings.seaLevel();
+            for (int y = minBuildHeight; y < maxBuildHeight; ++y) {
+                BlockState block = y <= level ? water : air;
+                LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                if (y >= minSphereY && y <= maxSphereY) {
+                    for (int x = 0; x < 16; ++x) {
+                        for (int z = 0; z < 16; ++z) {
+                            if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
                                 if (customSea && y < getGroundLevel(x, z)) {
                                     levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                                 } else {
@@ -122,42 +159,19 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                             }
                         }
                     }
-                }
-            } else {
-                if (customSea) {
-                    fillCustomSea(chunkAccess, cp);
-                }
-            }
-        } else if (lwSettings.type() == LostWorldType.CAVESPHERES) {
-            chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
-            WorldGenRegion region = (WorldGenRegion) structureManager.level;
-            cachedLevel = region.getLevel();
-            LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
-            int minBuildHeight = chunkAccess.getMinBuildHeight();
-            int maxBuildHeight = chunkAccess.getMaxBuildHeight();
-            int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-            int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-            BlockState defaultBlock = generatorSettings().get().defaultBlock();
-            BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
-            BlockState air = Blocks.AIR.defaultBlockState();
-//            int middleY = (minSphereY + maxSphereY) / 2;
-            for (int y = Math.max(minBuildHeight, minSphereY); y <= Math.min(maxBuildHeight-1, maxSphereY); ++y) {
-//                BlockState block = y <= middleY ? defaultBlock : air;
-                LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                for (int x = 0; x < 16; ++x) {
-                    for (int z = 0; z < 16; ++z) {
-                        if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                            if (y < getGroundLevel(x, z)) {
+                } else {
+                    for (int x = 0; x < 16; ++x) {
+                        for (int z = 0; z < 16; ++z) {
+                            if (customSea && y < getGroundLevel(x, z)) {
                                 levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                             } else {
-                                levelchunksection.setBlockState(x, y & 15, z, air, false);
+                                levelchunksection.setBlockState(x, y & 15, z, block, false);
                             }
                         }
                     }
                 }
             }
         } else {
-            chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
             if (customSea) {
                 fillCustomSea(chunkAccess, cp);
             }
