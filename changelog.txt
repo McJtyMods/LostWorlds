@@ -1,4 +1,4 @@
-Upcoming:
+1.20-0.0.3:
 - New 'cavespheres' Lost world type combining caverns and spheres
 - New lostworlds:abyss dimension that demonstrates the new cavern with spheres
 - Better handling of disabling fog and other special effects in case they are not needed
