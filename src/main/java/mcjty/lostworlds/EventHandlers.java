@@ -18,9 +18,22 @@ public class EventHandlers {
             if (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
                 LostWorldType type = generator.getLwSettings().type();
                 FogColor fogColor = generator.getLwSettings().fogColor();
-                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor), player);
+                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor, false), player);
             } else {
-                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.ISLANDS, FogColor.NONE), player);
+                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.NORMAL, FogColor.NONE, true), player);
+            }
+        }
+    }
+
+    public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!event.getEntity().level().isClientSide) {
+            ServerPlayer player = (ServerPlayer) event.getEntity();
+            if (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
+                LostWorldType type = generator.getLwSettings().type();
+                FogColor fogColor = generator.getLwSettings().fogColor();
+                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor, false), player);
+            } else {
+                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.NORMAL, FogColor.NONE, true), player);
             }
         }
     }

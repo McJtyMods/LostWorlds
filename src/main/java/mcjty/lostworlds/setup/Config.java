@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -17,12 +18,18 @@ public class Config {
 
     public static final String CATEGORY_GENERAL = "general";
 
+    private static String[] DEF_DIMENSIONS_WITH_SPECIAL_FOG = new String[]{
+            "minecraft:overworld"
+    };
+    private static ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSIONS_WITH_SPECIAL_FOG;
+    private static Set<ResourceLocation> dimensionsWithSpecialFog = null;
+
     private static String[] DEF_EXCLUDED_STRUCTURES_ISLANDS = new String[]{
             "minecraft:ocean_monuments",
             "minecraft:ancient_cities",
             "minecraft:mineshafts"
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
+    private static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_ISLANDS;
     private static Set<ResourceKey<StructureSet>> exludedStructuresIslands = null;
 
     private static String[] DEF_EXCLUDED_STRUCTURES_SPHERES = new String[]{
@@ -36,7 +43,7 @@ public class Config {
             "minecraft:village_snowy",
             "minecraft:village_taiga"
     };
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_SPHERES;
+    private static ForgeConfigSpec.ConfigValue<List<? extends String>> EXCLUDED_STRUCTURES_SPHERES;
     private static Set<ResourceKey<StructureSet>> exludedStructuresSpheres = null;
 
     public static void register() {
@@ -49,6 +56,9 @@ public class Config {
         EXCLUDED_STRUCTURES_SPHERES = COMMON_BUILDER
                 .comment("A list of structures that should not generate on lost_spheres worlds")
                 .defineList("excludedStructuresSpheres", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_SPHERES), s -> s instanceof String);
+        DIMENSIONS_WITH_SPECIAL_FOG = COMMON_BUILDER
+                .comment("A list of dimensions that should have special fog effects")
+                .defineList("dimensionsWithSpecialFog", Lists.newArrayList(Config.DEF_DIMENSIONS_WITH_SPECIAL_FOG), s -> s instanceof String);
 
         COMMON_BUILDER.pop();
         ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
@@ -83,6 +93,17 @@ public class Config {
             }
         }
         return exludedStructuresSpheres;
+    }
+
+    public static Set<ResourceLocation> getDimensionsWithSpecialFog() {
+        if (dimensionsWithSpecialFog == null) {
+            dimensionsWithSpecialFog = new HashSet<>();
+            List<? extends String> strings = DIMENSIONS_WITH_SPECIAL_FOG.get();
+            for (String s : strings) {
+                dimensionsWithSpecialFog.add(new ResourceLocation(s));
+            }
+        }
+        return dimensionsWithSpecialFog;
     }
 
 }
