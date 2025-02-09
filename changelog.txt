@@ -2,6 +2,7 @@ Upcoming:
 - New 'cavespheres' Lost world type combining caverns and spheres
 - New lostworlds:abyss dimension that demonstrates the new cavern with spheres
 - Better handling of disabling fog and other special effects in case they are not needed
+- New 'lostworlds-client.cfg' config file. This file contains all dimensions for which the special effects are enabled
 
 1.20-0.0.2:
 - Small crash fix

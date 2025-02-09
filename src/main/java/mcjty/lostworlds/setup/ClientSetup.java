@@ -17,7 +17,7 @@ public class ClientSetup {
 
     public static void onRegisterDimensionSpecialEffectsEvent(RegisterDimensionSpecialEffectsEvent event) {
         LostWorldsSpecialEffects effects = new LostWorldsSpecialEffects();
-        event.register(new ResourceLocation("minecraft:overworld"), effects);
+        Config.getDimensionsWithSpecialFog().forEach(key -> event.register(key, effects));
     }
 
     public static void onRegisterPresetEditorsEvent(RegisterPresetEditorsEvent event) {

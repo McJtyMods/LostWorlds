@@ -25,6 +25,7 @@ public class LostWorlds {
 
         instance = this;
         Config.register();
+        Config.registerCustomConfig(dist);
         Registration.init(bus);
         bus.addListener(setup::init);
         MinecraftForge.EVENT_BUS.addListener(EventHandlers::onPlayerLoggedInEvent);

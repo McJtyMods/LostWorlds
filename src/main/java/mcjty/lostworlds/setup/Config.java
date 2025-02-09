@@ -6,23 +6,27 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Config {
 
     public static final String CATEGORY_GENERAL = "general";
 
-    private static String[] DEF_DIMENSIONS_WITH_SPECIAL_FOG = new String[]{
-            "minecraft:overworld"
-    };
-    private static ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSIONS_WITH_SPECIAL_FOG;
-    private static Set<ResourceLocation> dimensionsWithSpecialFog = null;
+    private final static Set<ResourceLocation> dimensionsWithSpecialFog = new HashSet<>();
 
     private static String[] DEF_EXCLUDED_STRUCTURES_ISLANDS = new String[]{
             "minecraft:ocean_monuments",
@@ -56,13 +60,35 @@ public class Config {
         EXCLUDED_STRUCTURES_SPHERES = COMMON_BUILDER
                 .comment("A list of structures that should not generate on lost_spheres worlds")
                 .defineList("excludedStructuresSpheres", Lists.newArrayList(Config.DEF_EXCLUDED_STRUCTURES_SPHERES), s -> s instanceof String);
-        DIMENSIONS_WITH_SPECIAL_FOG = COMMON_BUILDER
-                .comment("A list of dimensions that should have special fog effects")
-                .defineList("dimensionsWithSpecialFog", Lists.newArrayList(Config.DEF_DIMENSIONS_WITH_SPECIAL_FOG), s -> s instanceof String);
 
         COMMON_BUILDER.pop();
         ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
+    }
+
+    public static void registerCustomConfig(Dist dist) {
+        if (dist.isClient()) {
+            Path config = FMLPaths.CONFIGDIR.get().resolve("lostworlds-client.cfg");
+            // If the file doesn't exist, create it
+            if (!config.toFile().exists()) {
+                try {
+                    config.toFile().createNewFile();
+                    // Write the default configuration to the file. The default configuration is a single line with the default dimension minecraft:overworld
+                    Files.write(config, Lists.newArrayList("minecraft:overworld", "lostworlds:abyss"));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            // Load the configuration from the file. This is a list of dimension resource locations in the format minecraft:overworld
+            dimensionsWithSpecialFog.clear();
+            try (BufferedReader reader = Files.newBufferedReader(config)) {
+                // Read all lines
+                List<String> lines = reader.lines().collect(Collectors.toList());
+                lines.stream().map(ResourceLocation::new).forEach(dimensionsWithSpecialFog::add);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public static Set<ResourceKey<StructureSet>> getExludedStructuresIslands() {
@@ -96,13 +122,6 @@ public class Config {
     }
 
     public static Set<ResourceLocation> getDimensionsWithSpecialFog() {
-        if (dimensionsWithSpecialFog == null) {
-            dimensionsWithSpecialFog = new HashSet<>();
-            List<? extends String> strings = DIMENSIONS_WITH_SPECIAL_FOG.get();
-            for (String s : strings) {
-                dimensionsWithSpecialFog.add(new ResourceLocation(s));
-            }
-        }
         return dimensionsWithSpecialFog;
     }
 
