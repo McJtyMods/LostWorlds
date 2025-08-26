@@ -1,13 +1,13 @@
 package mcjty.lostworlds.setup;
 
 import com.google.common.collect.Lists;
+import mcjty.lostworlds.LostWorlds;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.fml.ModLoadingContext;
-import net.neoforged.neoforge.fml.config.ModConfig;
 
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +52,8 @@ public class Config {
 
         COMMON_BUILDER.pop();
         ModConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
+
+		LostWorlds.container.registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
     }
 
     public static Set<ResourceKey<StructureSet>> getExludedStructuresIslands() {
@@ -60,7 +61,7 @@ public class Config {
             exludedStructuresIslands = new HashSet<>();
             List<? extends String> strings = EXCLUDED_STRUCTURES_ISLANDS.get();
             for (String s : strings) {
-                ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(s));
+                ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, ResourceLocation.parse(s));
                 if (key == null) {
                     throw new RuntimeException("Unknown structure set: " + s);
                 }
@@ -75,7 +76,7 @@ public class Config {
             exludedStructuresSpheres = new HashSet<>();
             List<? extends String> strings = EXCLUDED_STRUCTURES_SPHERES.get();
             for (String s : strings) {
-                ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(s));
+                ResourceKey<StructureSet> key = ResourceKey.create(Registries.STRUCTURE_SET, ResourceLocation.parse(s));
                 if (key == null) {
                     throw new RuntimeException("Unknown structure set: " + s);
                 }

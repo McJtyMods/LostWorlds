@@ -2,39 +2,30 @@ package mcjty.lostworlds.setup;
 
 import mcjty.lostworlds.LostWorlds;
 import mcjty.lostworlds.network.PacketWorldInfoToClient;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.NetworkDirection;
-import net.neoforged.neoforge.network.NetworkRegistry;
-import net.neoforged.neoforge.network.simple.SimpleChannel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
+
+@EventBusSubscriber(modid = LostWorlds.MODID)
 public class Messages {
-    private static SimpleChannel INSTANCE;
 
-    private static int packetId = 0;
-    private static int id() {
-        return packetId++;
+	@SubscribeEvent
+	public static void register(final RegisterPayloadHandlersEvent event) {
+		final PayloadRegistrar registrar = event.registrar("1");
+		registrar.playToClient(PacketWorldInfoToClient.TYPE, PacketWorldInfoToClient.STREAM_CODEC, PacketWorldInfoToClient::handle);
     }
 
-    public static void registerMessages(String name) {
-        SimpleChannel net = NetworkRegistry.ChannelBuilder
-                .named(new ResourceLocation(LostWorlds.MODID, name))
-                .networkProtocolVersion(() -> "1.0")
-                .clientAcceptedVersions(s -> true)
-                .serverAcceptedVersions(s -> true)
-                .simpleChannel();
-
-        INSTANCE = net;
-
-        net.registerMessage(id(), PacketWorldInfoToClient.class, PacketWorldInfoToClient::toBytes, PacketWorldInfoToClient::new, PacketWorldInfoToClient::handle);
+    public static <T extends CustomPacketPayload> void sendToPlayer(T packet, Player player) {
+        PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
     }
 
-    public static <T> void sendToPlayer(T packet, Player player) {
-        INSTANCE.sendTo(packet, ((ServerPlayer)player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
-    }
-
-    public static <T> void sendToServer(T packet) {
-        INSTANCE.sendToServer(packet);
+    public static <T extends CustomPacketPayload> void sendToServer(T packet) {
+        PacketDistributor.sendToServer(packet);
     }
 }

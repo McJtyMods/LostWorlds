@@ -1,11 +1,7 @@
 package mcjty.lostworlds.client;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import mcjty.lostworlds.LostWorlds;
 import mcjty.lostworlds.compat.LostCitiesCompat;
-import mcjty.lostworlds.setup.ModSetup;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import mcjty.lostworlds.worldgen.LWSettings;
@@ -22,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
-import net.neoforged.neoforge.client.gui.widget.ForgeSlider;
+import net.neoforged.neoforge.client.gui.widget.ExtendedSlider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiConsumer;
@@ -51,7 +47,7 @@ public class LWScreen extends Screen {
     private Button atlantisButton;
 
     private CycleButton<FogColor> fogColorButton;
-    private ForgeSlider seaLevelSlider;
+    private ExtendedSlider seaLevelSlider;
 
     public LWScreen(CreateWorldScreen worldScreen, HolderGetter<NoiseGeneratorSettings> noisegetter,
                     BiConsumer<NoiseGeneratorSettings, LWSettings> settingsConsumer,
@@ -93,7 +89,7 @@ public class LWScreen extends Screen {
                 .withValues(FogColor.values())
                 .create(10, 80, 70, 20, Component.literal("Fog")));
         fogColorButton.setValue(lwSettings.fogColor());
-        seaLevelSlider = addRenderableWidget(new ForgeSlider(10, 110, 220, 20, Component.literal("Sea "), Component.literal(""), -64, 384, 0, 1, 1, true) {
+        seaLevelSlider = addRenderableWidget(new ExtendedSlider(10, 110, 220, 20, Component.literal("Sea "), Component.literal(""), -64, 384, 0, 1, 1, true) {
             @Override
             public String getValueString() {
                 if (this.getValue() == -64) {
@@ -106,7 +102,7 @@ public class LWScreen extends Screen {
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
             Holder<NoiseGeneratorSettings> gen = noisegetter.getOrThrow(selected.settingsKey());
-            this.generator = gen.get();
+            this.generator = gen.value();
             LWSettings lwSettings = createNewLwSettings();
             this.applySettings.accept(this.generator, lwSettings);
             this.minecraft.setScreen(this.parent);
@@ -128,7 +124,7 @@ public class LWScreen extends Screen {
     }
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
         islandsButton.setFGColor(selected == ISLANDS ? 0x0044ff44 : 0x00aaaaaa);
         cavesButton.setFGColor(selected == CAVES ? 0x0044ff44 : 0x00aaaaaa);
         spheresButton.setFGColor(selected == SPHERES ? 0x0044ff44 : 0x00aaaaaa);
@@ -137,7 +133,7 @@ public class LWScreen extends Screen {
         seaLevelSlider.active = selected.type.supportsCustomSea();
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
         graphics.drawWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,16777215);
-        graphics.blit(new ResourceLocation(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40,  100, 100, 0, 0, 128, 128, 128, 128);
+        graphics.blit(ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40,  100, 100, 0, 0, 128, 128, 128, 128);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

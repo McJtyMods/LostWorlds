@@ -4,12 +4,13 @@ import mcjty.lostworlds.setup.ClientSetup;
 import mcjty.lostworlds.setup.Config;
 import mcjty.lostworlds.setup.ModSetup;
 import mcjty.lostworlds.setup.Registration;
-import net.neoforged.neoforge.api.distmarker.Dist;
-import net.neoforged.neoforge.common.NeoForge;
+
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.fml.common.Mod;
-import net.neoforged.neoforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.neoforged.neoforge.fml.loading.FMLEnvironment;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
+
 
 @Mod(LostWorlds.MODID)
 public class LostWorlds {
@@ -18,20 +19,20 @@ public class LostWorlds {
 
     public static final ModSetup setup = new ModSetup();
     public static LostWorlds instance;
+	public static ModContainer container;
 
-    public LostWorlds() {
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+    public LostWorlds(IEventBus modEventBus, ModContainer modContainer) {
         Dist dist = FMLEnvironment.dist;
 
         instance = this;
+		container = modContainer;
         Config.register();
-        Registration.init(bus);
-        bus.addListener(setup::init);
-        MinecraftForge.EVENT_BUS.addListener(EventHandlers::onPlayerLoggedInEvent);
+        Registration.init(modEventBus);
+		modEventBus.addListener(setup::init);
 
         if (dist.isClient()) {
-            bus.addListener(ClientSetup::onRegisterPresetEditorsEvent);
-            bus.addListener(ClientSetup::onRegisterDimensionSpecialEffectsEvent);
+            modEventBus.addListener(ClientSetup::onRegisterPresetEditorsEvent);
+            modEventBus.addListener(ClientSetup::onRegisterDimensionSpecialEffectsEvent);
         }
     }
 }

@@ -1,32 +1,32 @@
 modLoader="javafml" #mandatory
-loaderVersion="[47,)"
+loaderVersion="${loader_version_range}"
 license="MIT License https://github.com/McJtyMods/LostWorlds/blob/main/LICENSE"
 
 [[accessTransformers]]
 file="META-INF/accesstransformer.cfg"
 
 [[mods]]
-modId="lostworlds"
-version="${file.jarVersion}"
-displayName="LostRuins"
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
 description='''
 Worlds made for Lost Cities
 '''
-[[dependencies.lostworlds]]
-    modId="forge" #mandatory
+[[dependencies."${mod_id}"]]
+    modId="neoforge" #mandatory
     mandatory=true
-    versionRange="[40.1.50,)" #mandatory
+    versionRange="${neo_version_range}" #mandatory
     ordering="NONE"
     side="BOTH"
-[[dependencies.lostworlds]]
+[[dependencies."${mod_id}"]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.20,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.lostworlds]]
+[[dependencies."${mod_id}"]]
     modId="lostcities"
     mandatory=true
-    versionRange="[1.20-7.1.0,)"
+    versionRange="[1.21-8.3.3,)"
     ordering="AFTER"
     side="BOTH"

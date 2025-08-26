@@ -28,7 +28,7 @@ public class BiomeMapper {
         if (this.defaultBiomeId == null) {
             this.defaultBiome = null;
         } else {
-            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, new ResourceLocation(this.defaultBiomeId));
+            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, ResourceLocation.parse(this.defaultBiomeId));
             this.defaultBiome = biomes.getOrThrow(key);
         }
     }
@@ -47,16 +47,16 @@ public class BiomeMapper {
 
             for (String replacement : biomeMappingList) {
                 String[] split = StringUtils.split(replacement, '=');
-                Optional<Holder.Reference<Biome>> source = biomes.get(ResourceKey.create(Registries.BIOME, new ResourceLocation(split[0])));
+                Optional<Holder.Reference<Biome>> source = biomes.get(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(split[0])));
                 if (!source.isPresent()) {
                     ModSetup.logger.warn("Biome '" + split[0] + "' is missing!");
                 } else {
-                    Optional<Holder.Reference<Biome>> dest = biomes.get(ResourceKey.create(Registries.BIOME, new ResourceLocation(split[1])));
+                    Optional<Holder.Reference<Biome>> dest = biomes.get(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(split[1])));
                     if (!dest.isPresent()) {
                         ModSetup.logger.warn("Biome '" + split[1] + "' is missing!");
                     } else {
                         dest.ifPresent(h -> {
-                            biomeMapping.put(source.get().get(), h);
+                            biomeMapping.put(source.get().value(), h);
                         });
                     }
                 }
@@ -67,6 +67,6 @@ public class BiomeMapper {
 
     public Holder<Biome> getMappedBiome(Holder<Biome> biome) {
         initBiomeMapping();
-        return biomeMapping.getOrDefault(biome.get(), defaultBiome == null ? biome : defaultBiome);
+        return biomeMapping.getOrDefault(biome.value(), defaultBiome == null ? biome : defaultBiome);
     }
 }

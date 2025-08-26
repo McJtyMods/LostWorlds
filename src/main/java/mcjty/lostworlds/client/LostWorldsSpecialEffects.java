@@ -52,11 +52,11 @@ public class LostWorldsSpecialEffects extends DimensionSpecialEffects {
         return fogColor != FogColor.NONE;
     }
 
-    @Override
-    public boolean renderSky(ClientLevel level, int ticks, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
-        if (type == LostWorldType.ISLANDS || type == LostWorldType.SPHERES) {
-            level.getLevelData().isFlat = true;
-        }
-        return false;
-    }
+	@Override
+	public boolean renderSky(ClientLevel level, int ticks, float partialTick, Matrix4f modelViewMatrix, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
+		if (type == LostWorldType.ISLANDS || type == LostWorldType.SPHERES) {
+			level.getLevelData().isFlat = true;
+		}
+		return false;
+	}
 }

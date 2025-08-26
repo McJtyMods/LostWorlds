@@ -18,8 +18,8 @@ public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
     private static final float ISLAND_THRESHOLD = -0.9F;
     private final SimplexNoise islandNoise;
 
-    public static final ResourceLocation LOST_ISLANDS = new ResourceLocation(LostWorlds.MODID, "lost_islands");
-    public static final ResourceLocation LOST_ISLANDS_CHEESE = new ResourceLocation(LostWorlds.MODID, "lost_islands_cheese");
+    public static final ResourceLocation LOST_ISLANDS = ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands");
+    public static final ResourceLocation LOST_ISLANDS_CHEESE = ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands_cheese");
 
     public IslandsDensityFunction(long p_208630_) {
         RandomSource randomsource = new LegacyRandomSource(p_208630_);

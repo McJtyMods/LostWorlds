@@ -37,7 +37,7 @@ public class LWPresetEditor implements PresetEditor {
         HolderGetter<NoiseGeneratorSettings> noisegetter = registryaccess.lookupOrThrow(Registries.NOISE_SETTINGS);
         return new LWScreen(worldScreen, noisegetter, (settings, lwSettings) -> {
             worldScreen.getUiState().updateDimensions(lostWorldsConfigurator(settings, lwSettings));
-        }, chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).generatorSettings().get()
+        }, chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).generatorSettings().value()
                 : NoiseGeneratorSettings.dummy(),
                 chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).getLwSettings() : new LWSettings(LostWorldType.ISLANDS, null, null));
     }
