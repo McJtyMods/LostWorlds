@@ -1,6 +1,5 @@
 package mcjty.lostworlds.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.client.Camera;
@@ -12,7 +11,7 @@ import org.joml.Matrix4f;
 public class LostWorldsSpecialEffects extends DimensionSpecialEffects {
 
     public static LostWorldType type;
-    public static FogColor fogColor;
+    public static FogColor fogColor = FogColor.NONE;
 
     public LostWorldsSpecialEffects() {
         super(192.0F, true, DimensionSpecialEffects.SkyType.NORMAL, false, false);
