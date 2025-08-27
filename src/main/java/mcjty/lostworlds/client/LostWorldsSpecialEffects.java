@@ -1,6 +1,5 @@
 package mcjty.lostworlds.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.client.Camera;
@@ -12,7 +11,7 @@ import org.joml.Matrix4f;
 public class LostWorldsSpecialEffects extends DimensionSpecialEffects {
 
     public static LostWorldType type;
-    public static FogColor fogColor;
+    public static FogColor fogColor = FogColor.NONE;
 
     public LostWorldsSpecialEffects() {
         super(192.0F, true, DimensionSpecialEffects.SkyType.NORMAL, false, false);
@@ -52,11 +51,11 @@ public class LostWorldsSpecialEffects extends DimensionSpecialEffects {
         return fogColor != FogColor.NONE;
     }
 
-    @Override
-    public boolean renderSky(ClientLevel level, int ticks, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
-        if (type == LostWorldType.ISLANDS || type == LostWorldType.SPHERES) {
-            level.getLevelData().isFlat = true;
-        }
-        return false;
-    }
+	@Override
+	public boolean renderSky(ClientLevel level, int ticks, float partialTick, Matrix4f modelViewMatrix, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
+		if (type == LostWorldType.ISLANDS || type == LostWorldType.SPHERES) {
+			level.getLevelData().isFlat = true;
+		}
+		return false;
+	}
 }

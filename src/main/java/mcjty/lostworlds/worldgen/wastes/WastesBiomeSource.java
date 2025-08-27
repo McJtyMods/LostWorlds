@@ -1,6 +1,7 @@
 package mcjty.lostworlds.worldgen.wastes;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lostworlds.compat.LostCitiesCompat;
 import net.minecraft.core.Holder;
@@ -23,7 +24,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class WastesBiomeSource extends BiomeSource {
-    public static final Codec<WastesBiomeSource> CODEC = RecordCodecBuilder.create(
+    public static final MapCodec<WastesBiomeSource> CODEC = RecordCodecBuilder.mapCodec(
             instance -> instance
                     .group(
                             RegistryOps.retrieveRegistryLookup(Registries.BIOME).forGetter(provider -> provider.biomes),
@@ -60,7 +61,7 @@ public class WastesBiomeSource extends BiomeSource {
 
     @Override
     @Nonnull
-    protected Codec<? extends BiomeSource> codec() {
+    protected MapCodec<? extends BiomeSource> codec() {
         return CODEC;
     }
 
@@ -77,7 +78,7 @@ public class WastesBiomeSource extends BiomeSource {
         if (LostCitiesCompat.isHasLostCities()) {
             if (level == null) {
                 MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-                level = server.getLevel(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(dimensionId)));
+                level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(dimensionId)));
             }
             if (level != null && LostCitiesCompat.isInSphere(level, (x << 2) + 2, (z << 2) + 2)) {
                 m = sphereMapper;
