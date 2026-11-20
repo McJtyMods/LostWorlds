@@ -1,27 +1,37 @@
 package mcjty.lostworlds.setup;
 
 import mcjty.lostworlds.LostWorlds;
+import mcjty.lostworlds.client.ClientFog;
 import mcjty.lostworlds.client.LWPresetEditor;
-import mcjty.lostworlds.client.LostWorldsSpecialEffects;
-import net.minecraft.core.registries.Registries;
+import mcjty.lostworlds.network.PacketWorldInfoToClient;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.gui.screens.worldselection.PresetEditor;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
-import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
-import net.minecraftforge.client.event.RegisterPresetEditorsEvent;
 
-public class ClientSetup {
+import javax.annotation.Nullable;
 
-    private final static ResourceKey<WorldPreset> LOST_WORLD_PRESET = ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(LostWorlds.MODID, "lost_worlds"));
-    private final static ResourceKey<WorldPreset> LOST_WORLD_WASTES_PRESET = ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(LostWorlds.MODID, "lost_worlds_wastes"));
+public final class ClientSetup implements ClientModInitializer {
 
-    public static void onRegisterDimensionSpecialEffectsEvent(RegisterDimensionSpecialEffectsEvent event) {
-        LostWorldsSpecialEffects effects = new LostWorldsSpecialEffects();
-        Config.getDimensionsWithSpecialFog().forEach(key -> event.register(key, effects));
+    private static final PresetEditor NORMAL = new LWPresetEditor(false);
+    private static final PresetEditor WASTES = new LWPresetEditor(true);
+
+    @Override
+    public void onInitializeClient() {
+        Config.registerCustomConfig();
+        ClientPlayNetworking.registerGlobalReceiver(PacketWorldInfoToClient.TYPE, (payload, context) -> ClientFog.update(payload));
     }
 
-    public static void onRegisterPresetEditorsEvent(RegisterPresetEditorsEvent event) {
-        event.register(LOST_WORLD_PRESET, new LWPresetEditor(false));
-        event.register(LOST_WORLD_WASTES_PRESET, new LWPresetEditor(true));
+    @Nullable
+    public static PresetEditor presetEditor(ResourceKey<WorldPreset> preset) {
+        if (!LostWorlds.MODID.equals(preset.identifier().getNamespace())) {
+            return null;
+        }
+        return switch (preset.identifier().getPath()) {
+            case "lost_worlds" -> NORMAL;
+            case "lost_worlds_wastes" -> WASTES;
+            default -> null;
+        };
     }
 }

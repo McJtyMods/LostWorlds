@@ -5,21 +5,15 @@ import mcjty.lostcities.api.ILostCityInformation;
 import mcjty.lostcities.api.ILostSphere;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModList;
+import mcjty.lostcities.LostCities;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class LostCitiesCompat {
 
-    private static boolean hasLostCities = false;
-    private static ILostCities lostCities;
+    private static final ILostCities lostCities = LostCities.lostCitiesImp;
 
     public static boolean isInSphere(Level level, int x, int z) {
-        if (!hasLostCities) {
-            return false;
-        }
         ILostCityInformation lostInfo = lostCities.getLostInfo(level);
         if (lostInfo == null) {
             return false;
@@ -38,9 +32,6 @@ public class LostCitiesCompat {
 
 
     public static void setProfile(String profile) {
-        if (!hasLostCities) {
-            return;
-        }
         lostCities.setOverworldProfile(profile);
     }
 
@@ -126,34 +117,13 @@ public class LostCitiesCompat {
         }
     }
 
-    public static void register() {
-        if (ModList.get().isLoaded("lostcities")) {
-            InterModComms.sendTo(ILostCities.LOSTCITIES, ILostCities.GET_LOST_CITIES, GetLostCities::new);
-        }
+    @Nullable
+    public static LostCitiesContext getLostCitiesContext(Level level) {
+        ILostCityInformation info = lostCities.getLostInfo(level);
+        return info == null ? null : new LostCitiesContext(info);
     }
 
     public static boolean isHasLostCities() {
-        return hasLostCities;
-    }
-
-    public static LostCitiesContext getLostCitiesContext(Level level) {
-        if (!hasLostCities) {
-            return null;
-        }
-        ILostCityInformation info = lostCities.getLostInfo(level);
-        if (info != null) {
-            return new LostCitiesContext(info);
-        }
-        return null;
-    }
-
-    public static class GetLostCities implements Function<ILostCities, Void> {
-        @Nullable
-        @Override
-        public Void apply(ILostCities lc) {
-            lostCities = lc;
-            hasLostCities = true;
-            return null;
-        }
+        return true;
     }
 }

@@ -6,7 +6,9 @@ import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import mcjty.lostworlds.worldgen.LWSettings;
 import mcjty.lostworlds.worldgen.LostWorldType;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,9 +18,9 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
-import net.minecraftforge.client.gui.widget.ForgeSlider;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BiConsumer;
@@ -27,7 +29,6 @@ public class LWScreen extends Screen {
 
     private final CreateWorldScreen parent;
     private final BiConsumer<NoiseGeneratorSettings, LWSettings> applySettings;
-    private NoiseGeneratorSettings generator;
     private LWSettings lwSettings;
     private final HolderGetter<NoiseGeneratorSettings> noisegetter;
 
@@ -36,9 +37,9 @@ public class LWScreen extends Screen {
     private final static SelectedSetting NORMAL = new SelectedSetting(LostWorldType.NORMAL, LWChunkGenerator.LOST_NORMAL, "icon_normal.png", "createWorld.customize.lostworlds.normal.description", "biosphere");
     private final static SelectedSetting ATLANTIS = new SelectedSetting(LostWorldType.ATLANTIS, LWChunkGenerator.LOST_ATLANTIS, "icon_atlantis.png", "createWorld.customize.lostworlds.atlantis.description", "atlantis");
     private final static SelectedSetting ISLANDS = new SelectedSetting(LostWorldType.ISLANDS, LWChunkGenerator.LOST_ISLANDS, "icon_islands.png", "createWorld.customize.lostworlds.islands.description", "floating");
-    private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description", "caves");
+    private final static SelectedSetting CAVES = new SelectedSetting(LostWorldType.CAVES, LWChunkGenerator.LOST_CAVES, "icon_caves.png", "createWorld.customize.lostworlds.caves.description", "cavern");
     private final static SelectedSetting SPHERES = new SelectedSetting(LostWorldType.SPHERES, LWChunkGenerator.LOST_SPHERES, "icon_spheres.png", "createWorld.customize.lostworlds.spheres.description", "space");
-    private final static SelectedSetting CAVESPHERES = new SelectedSetting(LostWorldType.CAVESPHERES, LWChunkGenerator.LOST_CAVESPHERES, "icon_cavespheres.png", "createWorld.customize.lostworlds.cavespheres.description", "biosphere");
+    private final static SelectedSetting CAVESPHERES = new SelectedSetting(LostWorldType.CAVESPHERES, LWChunkGenerator.LOST_CAVESPHERES, "icon_cavespheres.png", "createWorld.customize.lostworlds.cavespheres.description", "biosphere_caves");
     private SelectedSetting selected = ISLANDS;
 
     private Button islandsButton;
@@ -49,16 +50,14 @@ public class LWScreen extends Screen {
     private Button cavespheresButton;
 
     private CycleButton<FogColor> fogColorButton;
-    private ForgeSlider seaLevelSlider;
+    private SeaLevelSlider seaLevelSlider;
 
     public LWScreen(CreateWorldScreen worldScreen, HolderGetter<NoiseGeneratorSettings> noisegetter,
                     BiConsumer<NoiseGeneratorSettings, LWSettings> settingsConsumer,
-                    NoiseGeneratorSettings generator,
                     LWSettings lwSettings) {
         super(Component.translatable("createWorld.customize.lostworlds.title"));
         this.parent = worldScreen;
         this.applySettings = settingsConsumer;
-        this.generator = generator;
         this.lwSettings = lwSettings;
         this.noisegetter = noisegetter;
     }
@@ -92,57 +91,53 @@ public class LWScreen extends Screen {
             default -> NORMAL;
         };
 
-        fogColorButton = addRenderableWidget(CycleButton.builder((FogColor t) -> Component.literal(t.getSerializedName()))
+        fogColorButton = addRenderableWidget(CycleButton.builder((FogColor t) -> Component.literal(t.getSerializedName()), lwSettings.fogColor())
                 .withValues(FogColor.values())
                 .create(10, 80, 70, 20, Component.literal("Fog")));
         fogColorButton.setValue(lwSettings.fogColor());
-        seaLevelSlider = addRenderableWidget(new ForgeSlider(10, 110, 220, 20, Component.literal("Sea "), Component.literal(""), -64, 384, 0, 1, 1, true) {
-            @Override
-            public String getValueString() {
-                if (this.getValue() == -64) {
-                    return "Off";
-                } else
-                    return super.getValueString();
-                }
-        });
-        seaLevelSlider.setValue(lwSettings.seaLevel() == null ? -64 : lwSettings.seaLevel());
+        seaLevelSlider = addRenderableWidget(new SeaLevelSlider(10, 110, 220, 20, lwSettings.seaLevel()));
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
             Holder<NoiseGeneratorSettings> gen = noisegetter.getOrThrow(selected.settingsKey());
-            this.generator = gen.get();
             LWSettings lwSettings = createNewLwSettings();
-            this.applySettings.accept(this.generator, lwSettings);
-            this.minecraft.setScreen(this.parent);
+            this.applySettings.accept(gen.value(), lwSettings);
+            this.minecraft.gui.setScreen(this.parent);
             LostCitiesCompat.setProfile(selected.profile());
         }).bounds(this.width - 130, this.height - 28, 50, 20).build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
-            this.minecraft.setScreen(this.parent);
+            this.minecraft.gui.setScreen(this.parent);
         }).bounds(this.width - 70, this.height - 28, 50, 20).build());
     }
 
     @NotNull
     private LWSettings createNewLwSettings() {
         return new LWSettings(selected.type(), fogColorButton.getValue(),
-                seaLevelSlider.getValue() == -64 ? null : (int) seaLevelSlider.getValue());
+                seaLevelSlider.seaLevel());
     }
 
+    private Component modeLabel(SelectedSetting setting) {
+        return Component.translatable("createWorld.customize.lostworlds." + setting.type().getSerializedName())
+                .withStyle(selected == setting ? ChatFormatting.GREEN : ChatFormatting.GRAY);
+    }
+
+    @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
-        islandsButton.setFGColor(selected == ISLANDS ? 0x0044ff44 : 0x00aaaaaa);
-        cavesButton.setFGColor(selected == CAVES ? 0x0044ff44 : 0x00aaaaaa);
-        spheresButton.setFGColor(selected == SPHERES ? 0x0044ff44 : 0x00aaaaaa);
-        normalButton.setFGColor(selected == NORMAL ? 0x0044ff44 : 0x00aaaaaa);
-        atlantisButton.setFGColor(selected == ATLANTIS ? 0x0044ff44 : 0x00aaaaaa);
-        cavespheresButton.setFGColor(selected == CAVESPHERES ? 0x0044ff44 : 0x00aaaaaa);
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        islandsButton.setMessage(modeLabel(ISLANDS));
+        cavesButton.setMessage(modeLabel(CAVES));
+        spheresButton.setMessage(modeLabel(SPHERES));
+        normalButton.setMessage(modeLabel(NORMAL));
+        atlantisButton.setMessage(modeLabel(ATLANTIS));
+        cavespheresButton.setMessage(modeLabel(CAVESPHERES));
         seaLevelSlider.active = selected.type.supportsCustomSea();
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
-        graphics.drawWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,16777215);
-        graphics.blit(new ResourceLocation(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40,  100, 100, 0, 0, 128, 128, 128, 128);
-        super.render(graphics, mouseX, mouseY, partialTick);
+        graphics.centeredText(this.font, this.title, this.width / 2, 8, 0xFFFFFFFF);
+        graphics.textWithWordWrap(this.font, Component.translatable(this.selected.description), 20, 40, this.width - 150,0xFFFFFFFF);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "textures/gui/" + selected.iconName), this.width - 120, 40, 0, 0, 100, 100, 128, 128, 128, 128);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
 }

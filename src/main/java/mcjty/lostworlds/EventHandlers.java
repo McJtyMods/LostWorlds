@@ -3,37 +3,19 @@ package mcjty.lostworlds;
 import mcjty.lostworlds.network.PacketWorldInfoToClient;
 import mcjty.lostworlds.setup.Messages;
 import mcjty.lostworlds.worldgen.FogColor;
-import mcjty.lostworlds.worldgen.LostWorldType;
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
-import net.minecraft.server.level.ServerLevel;
+import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraft.world.entity.player.Player;
 
 public class EventHandlers {
 
-    public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!event.getEntity().level().isClientSide) {
-            ServerPlayer player = (ServerPlayer) event.getEntity();
-            if (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
-                LostWorldType type = generator.getLwSettings().type();
-                FogColor fogColor = generator.getLwSettings().fogColor();
-                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor, false), player);
+    public static void sendWorldInfo(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            if (serverPlayer.level().getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
+                Messages.sendToPlayer(new PacketWorldInfoToClient(generator.getLwSettings().type(), generator.getLwSettings().fogColor(), false), serverPlayer);
             } else {
-                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.NORMAL, FogColor.NONE, true), player);
-            }
-        }
-    }
-
-    public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (!event.getEntity().level().isClientSide) {
-            ServerPlayer player = (ServerPlayer) event.getEntity();
-            if (((ServerLevel)player.level()).getChunkSource().getGenerator() instanceof LWChunkGenerator generator) {
-                LostWorldType type = generator.getLwSettings().type();
-                FogColor fogColor = generator.getLwSettings().fogColor();
-                Messages.sendToPlayer(new PacketWorldInfoToClient(type, fogColor, false), player);
-            } else {
-                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.NORMAL, FogColor.NONE, true), player);
+                Messages.sendToPlayer(new PacketWorldInfoToClient(LostWorldType.NORMAL, FogColor.NONE, true), serverPlayer);
             }
         }
     }
