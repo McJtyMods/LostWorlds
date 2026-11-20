@@ -2,6 +2,7 @@ package mcjty.lostworlds.client;
 
 import mcjty.lostworlds.worldgen.LWChunkGenerator;
 import mcjty.lostworlds.worldgen.LWSettings;
+import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import mcjty.lostworlds.worldgen.wastes.WastesBiomeSource;
 import net.minecraft.client.gui.screens.Screen;
@@ -37,19 +38,17 @@ public class LWPresetEditor implements PresetEditor {
         HolderGetter<NoiseGeneratorSettings> noisegetter = registryaccess.lookupOrThrow(Registries.NOISE_SETTINGS);
         return new LWScreen(worldScreen, noisegetter, (settings, lwSettings) -> {
             worldScreen.getUiState().updateDimensions(lostWorldsConfigurator(settings, lwSettings));
-        }, chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).generatorSettings().get()
-                : NoiseGeneratorSettings.dummy(),
-                chunkgenerator instanceof LWChunkGenerator ? ((LWChunkGenerator) chunkgenerator).getLwSettings() : new LWSettings(LostWorldType.ISLANDS, null, null));
+        }, chunkgenerator instanceof LWChunkGenerator generator ? generator.getLwSettings() : new LWSettings(LostWorldType.ISLANDS, FogColor.NONE, null));
     }
 
 
     private WorldCreationContext.DimensionsUpdater lostWorldsConfigurator(NoiseGeneratorSettings settings, LWSettings lwSettings) {
         return (frozen, dimensions) -> {
             BiomeSource biomesource;
-            Holder.Reference<MultiNoiseBiomeSourceParameterList> params = frozen.registryOrThrow(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST).getHolderOrThrow(MultiNoiseBiomeSourceParameterLists.OVERWORLD);
+            Holder.Reference<MultiNoiseBiomeSourceParameterList> params = frozen.lookupOrThrow(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST).getOrThrow(MultiNoiseBiomeSourceParameterLists.OVERWORLD);
             biomesource = MultiNoiseBiomeSource.createFromPreset(params);
             if (wastes) {
-                HolderLookup.RegistryLookup<Biome> registry = frozen.registryOrThrow(Registries.BIOME).asLookup();
+                HolderLookup.RegistryLookup<Biome> registry = frozen.lookupOrThrow(Registries.BIOME);
                 biomesource = new WastesBiomeSource(registry, "minecraft:overworld",
                         biomesource, Optional.of("minecraft:desert"), Optional.of("minecraft:jungle"), getBiomeMappingList(), Optional.empty());
             }

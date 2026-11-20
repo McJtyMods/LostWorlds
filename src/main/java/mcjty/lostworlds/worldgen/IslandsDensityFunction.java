@@ -2,29 +2,28 @@ package mcjty.lostworlds.worldgen;
 
 import com.mojang.serialization.MapCodec;
 import mcjty.lostworlds.LostWorlds;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.KeyDispatchDataCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Interval;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.DensityFunctions;
+import net.minecraft.world.level.levelgen.densityfunction.*;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 
-public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
-    public static final KeyDispatchDataCodec<IslandsDensityFunction> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(new IslandsDensityFunction(0L)));
-    public static final KeyDispatchDataCodec<DensityFunction> CODEC_CHEESE = KeyDispatchDataCodec.of(MapCodec.unit(DensityFunctions.add(new IslandsDensityFunction(0L), BlendedNoise.createUnseeded(0.25D, 0.25D, 80.0D, 160.0D, 4.0D))));
+public class IslandsDensityFunction implements DensityFunction {
+    public static final MapCodec<IslandsDensityFunction> CODEC = MapCodec.unit(new IslandsDensityFunction(0L));
+    public static final MapCodec<DensityFunction> CODEC_CHEESE = MapCodec.unit(new IslandsDensityFunction(0L).add(new BlendedNoise(0.25D, 0.25D, 80.0D, 160.0D, 4.0D)));
     private static final float ISLAND_THRESHOLD = -0.9F;
     private final SimplexNoise islandNoise;
 
-    public static final ResourceLocation LOST_ISLANDS = new ResourceLocation(LostWorlds.MODID, "lost_islands");
-    public static final ResourceLocation LOST_ISLANDS_CHEESE = new ResourceLocation(LostWorlds.MODID, "lost_islands_cheese");
+    public static final Identifier LOST_ISLANDS = Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands");
+    public static final Identifier LOST_ISLANDS_CHEESE = Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands_cheese");
 
     public IslandsDensityFunction(long p_208630_) {
         RandomSource randomsource = new LegacyRandomSource(p_208630_);
         randomsource.consumeCount(17292);
-        this.islandNoise = new SimplexNoise(randomsource);
+        this.islandNoise = new SimplexNoise(randomsource, true);
     }
 
     private static float getHeightValue(SimplexNoise noise, int x, int z) {
@@ -41,7 +40,7 @@ public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
             for(int j1 = -12; j1 <= 12; ++j1) {
                 long k1 = i + i1;
                 long l1 = j + j1;
-                if (k1 * k1 + l1 * l1 > 4096L && noise.getValue((double)k1, (double)l1) < (double)-0.9F) {
+                if (k1 * k1 + l1 * l1 > 4096L && noise.get(k1, l1) < (double)-0.9F) {
                     float f1 = (Mth.abs((float)k1) * 3439.0F + Mth.abs((float)l1) * 147.0F) % 13.0F + 9.0F;
                     float f2 = (float)(k - i1 * 2);
                     float f3 = (float)(l - j1 * 2);
@@ -55,19 +54,46 @@ public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
         return f;
     }
 
-    public double compute(DensityFunction.FunctionContext context) {
-        return ((double)getHeightValue(this.islandNoise, context.blockX() / 8, context.blockZ() / 8) - 8.0D) / 128.0D;
+    @Override
+    public DensitySampler compileSampler(CompileContext context) {
+        return new IslandSampler(islandNoise);
     }
 
-    public double minValue() {
-        return -0.84375D;
+    @Override
+    public DensityFunction rewriteChildren(DfRewriteRule rule) {
+        return this;
     }
 
-    public double maxValue() {
-        return 0.5625D;
+    @Override
+    public Interval range() {
+        return Interval.of(-0.84375F, 0.5625F);
     }
 
-    public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+    @Override
+    public int domainAxes() {
+        return AXIS_X | AXIS_Z;
+    }
+
+    @Override
+    public MapCodec<IslandsDensityFunction> codec() {
         return CODEC;
+    }
+
+    private record IslandSampler(SimplexNoise noise) implements DensitySampler {
+
+        @Override
+        public void sampleVolume(SamplerContext context, DensityBuffer output, DensityVolume volume) {
+            for (int z = 0; z < volume.sizeZ(); z++) {
+                for (int x = 0; x < volume.sizeX(); x++) {
+                    float value = sampleValue(context, volume.blockX(x), 0, volume.blockZ(z));
+                    output.setRange(volume.indexUnchecked(x, 0, z), volume.sizeY(), value);
+                }
+            }
+        }
+
+        @Override
+        public float sampleValue(SamplerContext context, int x, int y, int z) {
+            return (getHeightValue(noise, x / 8, z / 8) - 8.0F) / 128.0F;
+        }
     }
 }
