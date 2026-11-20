@@ -1,20 +1,21 @@
 package mcjty.lostworlds.worldgen.wastes;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lostworlds.compat.LostCitiesCompat;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -23,10 +24,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class WastesBiomeSource extends BiomeSource {
-    public static final Codec<WastesBiomeSource> CODEC = RecordCodecBuilder.create(
+    public static final MapCodec<WastesBiomeSource> CODEC = RecordCodecBuilder.mapCodec(
             instance -> instance
                     .group(
-                            RegistryOps.retrieveRegistryLookup(Registries.BIOME).forGetter(provider -> provider.biomes),
+                            RegistryOps.<Biome, WastesBiomeSource>retrieveGetter(Registries.BIOME),
                             Codec.STRING.fieldOf("dimension").forGetter(provider -> provider.dimensionId),
                             BiomeSource.CODEC.fieldOf("adapt_biome_source").forGetter(provider -> provider.biomeSource),
                             Codec.STRING.optionalFieldOf("default").forGetter(provider -> Optional.ofNullable(provider.mapper.getDefaultBiomeId())),
@@ -37,13 +38,12 @@ public class WastesBiomeSource extends BiomeSource {
                     .apply(instance, instance.stable(WastesBiomeSource::new)));
 
     private final String dimensionId;
-    private final HolderLookup.RegistryLookup<Biome> biomes;
     private final BiomeSource biomeSource;
     private final BiomeMapper mapper;
     private final BiomeMapper sphereMapper;
     private Level level;    // Only needed for Lost Cities
 
-    public WastesBiomeSource(HolderLookup.RegistryLookup<Biome> biomes, String dimensionId, BiomeSource biomeSource,
+    public WastesBiomeSource(HolderGetter<Biome> biomes, String dimensionId, BiomeSource biomeSource,
                              Optional<String> defaultBiome,
                              Optional<String> defaultSphereBiome,
                              List<String> biomeMappingList,
@@ -52,7 +52,6 @@ public class WastesBiomeSource extends BiomeSource {
 //        super(biomeSource.possibleBiomes().stream());
         super();
         this.dimensionId = dimensionId;
-        this.biomes = biomes;
         this.biomeSource = biomeSource;
         this.mapper = new BiomeMapper(biomes, defaultBiome, biomeMappingList);
         this.sphereMapper = new BiomeMapper(biomes, defaultSphereBiome, sphereBiomeMappingList.orElse(Collections.emptyList()));
@@ -60,7 +59,7 @@ public class WastesBiomeSource extends BiomeSource {
 
     @Override
     @Nonnull
-    protected Codec<? extends BiomeSource> codec() {
+    protected MapCodec<? extends BiomeSource> codec() {
         return CODEC;
     }
 
@@ -77,7 +76,7 @@ public class WastesBiomeSource extends BiomeSource {
         if (LostCitiesCompat.isHasLostCities()) {
             if (level == null) {
                 MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-                level = server.getLevel(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(dimensionId)));
+                level = server == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, Identifier.parse(dimensionId)));
             }
             if (level != null && LostCitiesCompat.isInSphere(level, (x << 2) + 2, (z << 2) + 2)) {
                 m = sphereMapper;

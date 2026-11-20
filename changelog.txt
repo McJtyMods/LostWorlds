@@ -1,4 +1,7 @@
-1.20-0.0.4:
+1.21.11-2.0.0:
+- Ported Lost Worlds to Minecraft 1.21.11 with NeoForge.
+
+1.20-1.0.0:
 - Fixed low custom sea levels in Islands worlds generating solid deepslate where the ocean should be.
 
 1.20-0.0.3:

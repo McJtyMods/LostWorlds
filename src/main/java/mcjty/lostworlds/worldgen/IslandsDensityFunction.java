@@ -2,7 +2,7 @@ package mcjty.lostworlds.worldgen;
 
 import com.mojang.serialization.MapCodec;
 import mcjty.lostworlds.LostWorlds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -18,8 +18,8 @@ public class IslandsDensityFunction implements DensityFunction.SimpleFunction {
     private static final float ISLAND_THRESHOLD = -0.9F;
     private final SimplexNoise islandNoise;
 
-    public static final ResourceLocation LOST_ISLANDS = new ResourceLocation(LostWorlds.MODID, "lost_islands");
-    public static final ResourceLocation LOST_ISLANDS_CHEESE = new ResourceLocation(LostWorlds.MODID, "lost_islands_cheese");
+    public static final Identifier LOST_ISLANDS = Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands");
+    public static final Identifier LOST_ISLANDS_CHEESE = Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands_cheese");
 
     public IslandsDensityFunction(long p_208630_) {
         RandomSource randomsource = new LegacyRandomSource(p_208630_);

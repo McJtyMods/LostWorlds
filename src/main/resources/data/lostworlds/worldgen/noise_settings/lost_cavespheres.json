@@ -33,7 +33,7 @@
 		"erosion": 0,
 		"depth": 0,
 		"ridges": 0,
-		"initial_density_without_jaggedness": 0,
+		"preliminary_surface_level": 320,
 		"final_density": {
 			"type": "minecraft:squeeze",
 			"argument": {
