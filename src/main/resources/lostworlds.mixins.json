@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "mcjty.lostworlds.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["SkyRendererMixin"],
+  "injectors": {"defaultRequire": 1}
+}

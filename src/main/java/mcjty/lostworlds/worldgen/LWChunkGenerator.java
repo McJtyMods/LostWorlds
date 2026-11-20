@@ -1,6 +1,6 @@
 package mcjty.lostworlds.worldgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lostcities.varia.NoiseGeneratorPerlin;
 import mcjty.lostworlds.LostWorlds;
@@ -9,7 +9,7 @@ import mcjty.lostworlds.compat.LostCitiesCompat;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.Mth;
@@ -35,23 +35,24 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostWorldsChunkGenerator {
 
-    public static final ResourceLocation LOSTWORLDS_CHUNKGEN = new ResourceLocation(LostWorlds.MODID, "lostworlds");
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islands"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_caves"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_spheres"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_NORMAL = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_normal"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_ATLANTIS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_atlantis"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVESPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_cavespheres"));
+    public static final Identifier LOSTWORLDS_CHUNKGEN = Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lostworlds");
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_caves"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_spheres"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_NORMAL = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_normal"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_ATLANTIS = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_atlantis"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVESPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.fromNamespaceAndPath(LostWorlds.MODID, "lost_cavespheres"));
     public static final float GROUND_SCALE = 3.0f;
 
     private final LWSettings lwSettings;
     private final NoiseGeneratorPerlin groundNoise; // For the deep ground in the ocean
     private Level cachedLevel;
 
-    public static final Codec<LWChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+    public static final MapCodec<LWChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((instance) -> instance.group(
                 LWSettings.CODEC.fieldOf("lwsettings").forGetter(LWChunkGenerator::getLwSettings),
                 BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
                 NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
@@ -95,11 +96,14 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         WorldGenRegion region = (WorldGenRegion) structureManager.level;
         cachedLevel = region.getLevel();
         LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
-        int minBuildHeight = chunkAccess.getMinBuildHeight();
-        int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+        if (context == null) {
+            return chunkAccess;
+        }
+        int minBuildHeight = chunkAccess.getMinY();
+        int maxBuildHeight = (chunkAccess.getMaxY() + 1);
         int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
         int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-        BlockState defaultBlock = generatorSettings().get().defaultBlock();
+        BlockState defaultBlock = generatorSettings().value().defaultBlock();
         BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         int middleY = (minSphereY + maxSphereY) / 2;
@@ -131,11 +135,11 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         // Only generate the chunk if we have Lost Cities and we are in a sphere
         if (context != null && context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
             chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
-            int minBuildHeight = chunkAccess.getMinBuildHeight();
-            int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+            int minBuildHeight = chunkAccess.getMinY();
+            int maxBuildHeight = (chunkAccess.getMaxY() + 1);
             int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
             int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-            BlockState defaultBlock = generatorSettings().get().defaultBlock();
+            BlockState defaultBlock = generatorSettings().value().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
             BlockState air = Blocks.AIR.defaultBlockState();
             BlockState water;
@@ -190,9 +194,9 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     }
 
     @Override
-    public void applyCarvers(WorldGenRegion level, long seed, RandomState random, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunk, GenerationStep.Carving step) {
+    public void applyCarvers(WorldGenRegion level, long seed, RandomState random, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunk) {
         if (lwSettings.type() == LostWorldType.CAVES || lwSettings.type() == LostWorldType.NORMAL || lwSettings.type() == LostWorldType.ATLANTIS || lwSettings.type() == LostWorldType.CAVESPHERES) {
-            super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step);
+            super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk);
         }  else if (lwSettings.type() == LostWorldType.SPHERES) {
             ChunkPos cp = chunk.getPos();
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
@@ -202,11 +206,11 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             if (lwSettings.hasCustomSea()) {
                 // We only do carvers if the chunk is fully in a sphere because otherwise we get weird caves in the water
                 if (context != null && context.isInSphereFull(cp.getMinBlockX(), cp.getMinBlockZ())) {
-                    super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step);
+                    super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk);
                 }
             } else {
                 if (context != null && context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
-                    super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk, step);
+                    super.applyCarvers(level, seed, random, biomeManager, structureManager, chunk);
                 }
             }
         }
@@ -216,13 +220,13 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         Heightmap oceanFloor = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
         Heightmap worldSurface = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-        BlockState defaultBlock = generatorSettings().get().defaultBlock();
+        BlockState defaultBlock = generatorSettings().value().defaultBlock();
         BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
         BlockState water = Blocks.WATER.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
 
-        int minBuildHeight = chunkAccess.getMinBuildHeight();
-        int seaLevel = Math.min(lwSettings.seaLevel(), chunkAccess.getMaxBuildHeight() - 1);
+        int minBuildHeight = chunkAccess.getMinY();
+        int seaLevel = Math.min(lwSettings.seaLevel(), (chunkAccess.getMaxY() + 1) - 1);
         boolean islands = lwSettings.type() == LostWorldType.ISLANDS;
         int bedrockCeiling = islands ? Math.min(minBuildHeight + 2, seaLevel) : minBuildHeight + 2;
         int groundOffset = Math.min(0, seaLevel);
@@ -255,10 +259,8 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState random) {
         if (lwSettings.type() == LostWorldType.SPHERES && cachedLevel != null) {
             LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(cachedLevel);
-            if (context != null) {
-                if (!context.isInSphereFullOrPartially(x << 4, z << 4)) {
-                    return level.getMinBuildHeight();
-                }
+            if (context != null && !context.isInSphereFullOrPartially(x, z)) {
+                return level.getMinY();
             }
         }
         return super.getBaseHeight(x, z, type, level, random);
@@ -266,7 +268,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
 
     // We override buildSurface because there is some hardcoded badlands stuff that is done here and we don't want that
     @Override
-    public void buildSurface(ChunkAccess chunkAccess, WorldGenerationContext wgContext, RandomState random, StructureManager structureManager, BiomeManager biomeManager, Registry<Biome> biomes, Blender blender) {
+    public void buildSurface(ChunkAccess chunkAccess, WorldGenerationContext wgContext, RandomState random, StructureManager structureManager, BiomeManager biomeManager, Blender blender, Set<Holder<Biome>> possibleBiomes) {
         if (lwSettings.type() == LostWorldType.SPHERES) {
             ChunkPos cp = chunkAccess.getPos();
             boolean customSea = lwSettings.hasCustomSea();
@@ -278,7 +280,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             } else {
                 water = air;
             }
-            BlockState defaultBlock = generatorSettings().get().defaultBlock();
+            BlockState defaultBlock = generatorSettings().value().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
 
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
@@ -288,12 +290,12 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             if (context != null) {
                 if (context.isInSphereFull(cp.getMinBlockX(), cp.getMinBlockZ())) {
                     // We are fully in the sphere. Just generate the chunk as normal
-                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
+                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, blender, possibleBiomes);
                 } else if (context.isInSphereFullOrPartially(cp.getMinBlockX(), cp.getMinBlockZ())) {
                     // We are partially in the sphere. Generate the chunk but remove blocks that are outside the sphere
-                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
-                    int minBuildHeight = chunkAccess.getMinBuildHeight();
-                    int maxBuildHeight = chunkAccess.getMaxBuildHeight();
+                    super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, blender, possibleBiomes);
+                    int minBuildHeight = chunkAccess.getMinY();
+                    int maxBuildHeight = (chunkAccess.getMaxY() + 1);
                     int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
                     int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
                     int level = lwSettings.seaLevel() == null ? -63 : lwSettings.seaLevel();
@@ -328,11 +330,11 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                 return;
             }
         }
-        super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, biomes, blender);
+        super.buildSurface(chunkAccess, wgContext, random, structureManager, biomeManager, blender, possibleBiomes);
     }
 
     @Override
-    public void createStructures(RegistryAccess access, ChunkGeneratorStructureState structureState, StructureManager structureManager, ChunkAccess chunk, StructureTemplateManager templateManager) {
+    public void createStructures(RegistryAccess access, ChunkGeneratorStructureState structureState, StructureManager structureManager, ChunkAccess chunk, StructureTemplateManager templateManager, ResourceKey<Level> level) {
         if (structureManager.level instanceof ServerLevel serverLevel) {
             cachedLevel = serverLevel;
         } else if (structureManager.level instanceof WorldGenRegion region) {
@@ -356,13 +358,13 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                 }
             }
 
-            if (structureplacement.isStructureChunk(structureState, cp.x, cp.z)) {
+            if (structureplacement.isStructureChunk(structureState, cp.x(), cp.z())) {
                 if (list.size() == 1) {
-                    this.tryGenerateStructure(list.get(0), structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos);
+                    this.tryGenerateStructure(list.get(0), structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos, level);
                 } else {
                     List<StructureSet.StructureSelectionEntry> listCopy = new ArrayList<>(list);
                     WorldgenRandom worldgenrandom = new WorldgenRandom(new LegacyRandomSource(0L));
-                    worldgenrandom.setLargeFeatureSeed(structureState.getLevelSeed(), cp.x, cp.z);
+                    worldgenrandom.setLargeFeatureSeed(structureState.getLevelSeed(), cp.x(), cp.z());
                     int totalweight = 0;
                     for (StructureSet.StructureSelectionEntry entry : listCopy) {
                         totalweight += entry.weight();
@@ -381,7 +383,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                         }
 
                         StructureSet.StructureSelectionEntry entry = listCopy.get(selected);
-                        if (this.tryGenerateStructure(entry, structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos)) {
+                        if (this.tryGenerateStructure(entry, structureManager, access, randomstate, templateManager, structureState.getLevelSeed(), chunk, cp, sectionpos, level)) {
                             return;
                         }
 
@@ -394,11 +396,11 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         });
     }
 
-    private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry entry, StructureManager structureManager, RegistryAccess registryAccess, RandomState rnd, StructureTemplateManager templateManager, long seed, ChunkAccess chunk, ChunkPos cp, SectionPos sp) {
+    private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry entry, StructureManager structureManager, RegistryAccess registryAccess, RandomState rnd, StructureTemplateManager templateManager, long seed, ChunkAccess chunk, ChunkPos cp, SectionPos sp, ResourceKey<Level> level) {
         Structure structure = entry.structure().value();
         StructureStart start = structureManager.getStartForStructure(sp, structure, chunk);
         int references = start != null ? start.getReferences() : 0;
-        StructureStart structurestart = structure.generate(registryAccess, this, this.biomeSource, rnd, templateManager, seed, cp, references, chunk, structure.biomes()::contains);
+        StructureStart structurestart = structure.generate(entry.structure(), level, registryAccess, this, this.biomeSource, rnd, templateManager, seed, cp, references, chunk, structure.biomes()::contains);
         if (structurestart.isValid()) {
             structureManager.setStartForStructure(sp, structure, structurestart, chunk);
             return true;
@@ -421,7 +423,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     }
 
     @Override
-    protected Codec<? extends ChunkGenerator> codec() {
+    protected MapCodec<? extends ChunkGenerator> codec() {
         return CODEC;
     }
 }
