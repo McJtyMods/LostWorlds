@@ -1,37 +1,47 @@
 buildscript {
     repositories {
-        maven { url = 'https://maven.minecraftforge.net/' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        maven { url = 'https://plugins.gradle.org/m2/' }
         maven { url = 'https://maven.firstdark.dev/releases' }
         mavenCentral()
         gradlePluginPortal()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-        classpath 'com.hypherionmc.modutils:modpublisher:2.0.4'
+        classpath 'com.hypherionmc.modutils:modpublisher:2.2.1'
     }
 }
 
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
+}
+
 apply plugin: 'com.hypherionmc.modutils.modpublisher'
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-if (project.file('../gradletools.gradle').exists()) {
-    apply from: '../gradletools.gradle'
+
+def sharedTools = [findProperty('gradletools_path')?.with { file(it) },
+                   rootProject != project ? rootProject.file('gradletools.gradle') : null,
+                   file('../Multi_neo/gradletools.gradle'),
+                   file('../gradletools.gradle'),
+                   file('gradletools.gradle')].find { it?.isFile() }
+if (sharedTools != null) {
+    apply from: sharedTools
 } else {
-    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/1.20_tech/gradletools.gradle'
+    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/26.1.2_neo/gradletools.gradle'
 }
 
 group = "com.github.mcjty"
-archivesBaseName = "lostworlds"
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+base.archivesName = "lostworlds"
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "-${System.getenv('BUILD_NUMBER')}"
+}
 
 repos()
-runs('lostworlds')
-jars('lostworlds')
+at()
+runs()
+jars()
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
@@ -39,9 +49,18 @@ sourceSets.main.resources {
 
 dependencies {
     mc()
-    jei()
-    top()
-    lostcities()
+    if (findProject(':LostCities') != null || findProperty('lostcities_version') != null) {
+        lostcities()
+    } else {
+        implementation "maven.modrinth:the-lost-cities:26.1.2-10.0.6"
+    }
 }
 
-modpublisher(['the-one-probe'], ['the-lost-cities'], ['the-one-probe'], ['the-lost-cities'], [])
+modpublisher([], ['the-lost-cities'], [], ['the-lost-cities'], [])
+
+repositories {
+    maven {
+        url = uri('https://api.modrinth.com/maven')
+        content { includeGroup 'maven.modrinth' }
+    }
+}
