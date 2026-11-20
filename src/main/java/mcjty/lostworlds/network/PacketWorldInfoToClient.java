@@ -1,44 +1,32 @@
 package mcjty.lostworlds.network;
 
-import mcjty.lostworlds.client.LostWorldsSpecialEffects;
+import mcjty.lostworlds.LostWorlds;
 import mcjty.lostworlds.worldgen.FogColor;
 import mcjty.lostworlds.worldgen.LostWorldType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.function.Supplier;
+public record PacketWorldInfoToClient(LostWorldType worldType, FogColor fogColor, boolean disabled) implements CustomPacketPayload {
 
-public class PacketWorldInfoToClient {
+    public static final Type<PacketWorldInfoToClient> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "world_info"));
+    public static final StreamCodec<FriendlyByteBuf, PacketWorldInfoToClient> STREAM_CODEC =
+            StreamCodec.ofMember(PacketWorldInfoToClient::write, PacketWorldInfoToClient::read);
 
-    private final LostWorldType type;
-    private final FogColor fogColor;
-    private final boolean disabled;
-
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeShort(type.ordinal());
-        buf.writeShort(fogColor.ordinal());
-        buf.writeBoolean(disabled);
+    private static PacketWorldInfoToClient read(FriendlyByteBuf buffer) {
+        return new PacketWorldInfoToClient(buffer.readEnum(LostWorldType.class), buffer.readEnum(FogColor.class), buffer.readBoolean());
     }
 
-    public PacketWorldInfoToClient(FriendlyByteBuf buf) {
-        type = LostWorldType.values()[buf.readShort()];
-        fogColor = FogColor.values()[buf.readShort()];
-        disabled = buf.readBoolean();
+    private void write(FriendlyByteBuf buffer) {
+        buffer.writeEnum(worldType);
+        buffer.writeEnum(fogColor);
+        buffer.writeBoolean(disabled);
     }
 
-    public PacketWorldInfoToClient(LostWorldType type, FogColor fogColor, boolean disabled) {
-        this.type = type;
-        this.fogColor = fogColor;
-        this.disabled = disabled;
-    }
-
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            LostWorldsSpecialEffects.type = type;
-            LostWorldsSpecialEffects.fogColor = fogColor;
-            LostWorldsSpecialEffects.disabled = disabled;
-        });
-        ctx.setPacketHandled(true);
+    @Override
+    public Type<PacketWorldInfoToClient> type() {
+        return TYPE;
     }
 }

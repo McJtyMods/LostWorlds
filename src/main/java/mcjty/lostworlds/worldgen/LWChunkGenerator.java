@@ -1,6 +1,6 @@
 package mcjty.lostworlds.worldgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.lostcities.varia.NoiseGeneratorPerlin;
 import mcjty.lostworlds.LostWorlds;
@@ -38,20 +38,20 @@ import java.util.List;
 
 public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostWorldsChunkGenerator {
 
-    public static final ResourceLocation LOSTWORLDS_CHUNKGEN = new ResourceLocation(LostWorlds.MODID, "lostworlds");
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_islands"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_caves"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_spheres"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_NORMAL = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_normal"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_ATLANTIS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_atlantis"));
-    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVESPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(LostWorlds.MODID, "lost_cavespheres"));
+    public static final ResourceLocation LOSTWORLDS_CHUNKGEN = ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lostworlds");
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_islands"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_caves"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_SPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_spheres"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_NORMAL = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_normal"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_ATLANTIS = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_atlantis"));
+    public static final ResourceKey<NoiseGeneratorSettings> LOST_CAVESPHERES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.fromNamespaceAndPath(LostWorlds.MODID, "lost_cavespheres"));
     public static final float GROUND_SCALE = 3.0f;
 
     private final LWSettings lwSettings;
     private final NoiseGeneratorPerlin groundNoise; // For the deep ground in the ocean
     private Level cachedLevel;
 
-    public static final Codec<LWChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+    public static final MapCodec<LWChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((instance) -> instance.group(
                 LWSettings.CODEC.fieldOf("lwsettings").forGetter(LWChunkGenerator::getLwSettings),
                 BiomeSource.CODEC.fieldOf("biome_source").forGetter(ChunkGenerator::getBiomeSource),
                 NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
@@ -95,11 +95,14 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         WorldGenRegion region = (WorldGenRegion) structureManager.level;
         cachedLevel = region.getLevel();
         LostCitiesCompat.LostCitiesContext context = LostCitiesCompat.getLostCitiesContext(region.getLevel());
+        if (context == null) {
+            return chunkAccess;
+        }
         int minBuildHeight = chunkAccess.getMinBuildHeight();
         int maxBuildHeight = chunkAccess.getMaxBuildHeight();
         int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
         int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-        BlockState defaultBlock = generatorSettings().get().defaultBlock();
+        BlockState defaultBlock = generatorSettings().value().defaultBlock();
         BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         int middleY = (minSphereY + maxSphereY) / 2;
@@ -135,7 +138,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             int maxBuildHeight = chunkAccess.getMaxBuildHeight();
             int minSphereY = context.getMinSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
             int maxSphereY = context.getMaxSphereY(cp.getMinBlockX(), cp.getMinBlockZ());
-            BlockState defaultBlock = generatorSettings().get().defaultBlock();
+            BlockState defaultBlock = generatorSettings().value().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
             BlockState air = Blocks.AIR.defaultBlockState();
             BlockState water;
@@ -216,7 +219,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         Heightmap oceanFloor = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
         Heightmap worldSurface = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-        BlockState defaultBlock = generatorSettings().get().defaultBlock();
+        BlockState defaultBlock = generatorSettings().value().defaultBlock();
         BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
         BlockState water = Blocks.WATER.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
@@ -278,7 +281,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             } else {
                 water = air;
             }
-            BlockState defaultBlock = generatorSettings().get().defaultBlock();
+            BlockState defaultBlock = generatorSettings().value().defaultBlock();
             BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
 
             WorldGenRegion region = (WorldGenRegion) structureManager.level;
@@ -421,7 +424,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
     }
 
     @Override
-    protected Codec<? extends ChunkGenerator> codec() {
+    protected MapCodec<? extends ChunkGenerator> codec() {
         return CODEC;
     }
 }
