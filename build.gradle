@@ -1,47 +1,113 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net/' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        maven { url = 'https://plugins.gradle.org/m2/' }
-        maven { url = 'https://maven.firstdark.dev/releases' }
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-        classpath 'com.hypherionmc.modutils:modpublisher:2.0.4'
-    }
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'com.hypherionmc.modutils.modpublisher' version '2.2.1'
 }
 
-apply plugin: 'com.hypherionmc.modutils.modpublisher'
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-if (project.file('../gradletools.gradle').exists()) {
-    apply from: '../gradletools.gradle'
+def sharedTools = [findProperty('gradletools_path')?.with { file(it) },
+                   rootProject != project ? rootProject.file('gradletools.gradle') : null,
+                   file('../Multi_fabric/gradletools.gradle'),
+                   file('../gradletools.gradle'),
+                   file('gradletools.gradle')].find { it?.isFile() }
+if (sharedTools != null) {
+    apply from: sharedTools
 } else {
-    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/1.20_tech/gradletools.gradle'
+    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/26.2_fabric/gradletools.gradle'
 }
 
 group = "com.github.mcjty"
-archivesBaseName = "lostworlds"
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+version = project.version
 
-repos()
-runs('lostworlds')
-jars('lostworlds')
+base {
+    archivesName = "${mod_id}-fabric-${minecraft_version}"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
+
+// Gradle creates this task only on the root project (standalone builds).
+if (project == rootProject) {
+    tasks.named('updateDaemonJvm') {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
+    }
+}
+
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "-${System.getenv('BUILD_NUMBER')}"
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+}
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
-dependencies {
-    mc()
-    jei()
-    top()
-    lostcities()
+tasks.withType(Jar).configureEach {
+    includeEmptyDirs = false
 }
 
-modpublisher(['the-one-probe'], ['the-lost-cities'], ['the-one-probe'], ['the-lost-cities'], [])
+loom {
+    def aw = file("src/main/resources/META-INF/${mod_id}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
+    runs {
+        client {
+            client()
+            setConfigName('Fabric Client')
+            ideConfigGenerated(true)
+            runDir('runs/client')
+        }
+        server {
+            server()
+            setConfigName('Fabric Server')
+            ideConfigGenerated(true)
+            runDir('runs/server')
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    if (findProject(':LostCities') != null || findProperty('lostcities_version') != null) {
+        lostcities()
+    } else {
+        implementation "maven.modrinth:the-lost-cities:26.2-11.0.3-fabric"
+    }
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}"
+}
+
+modpublisher([], ['fabric-api', 'forge-config-api-port', 'the-lost-cities'], [], ['fabric-api', 'forge-config-api-port', 'the-lost-cities'], [])
+
+processResources {
+    def expandProps = [
+            'version'              : version,
+            'mod_id'               : mod_id,
+            'mod_name'             : mod_name,
+            'minecraft_version'    : minecraft_version,
+            'fabric_loader_version': fabric_loader_version,
+            'java_version'         : java_version
+    ]
+    filesMatching('fabric.mod.json') {
+        expand expandProps
+    }
+    inputs.properties(expandProps)
+}
+
+repositories {
+    maven {
+        url = uri('https://api.modrinth.com/maven')
+        content { includeGroup 'maven.modrinth' }
+    }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "lostworlds",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "World presets for Lost Cities",
+  "authors": ["McJty"],
+  "contact": {
+    "homepage": "http://github.com/McJtyMods/LostWorlds/",
+    "issues": "http://github.com/McJtyMods/LostWorlds/issues",
+    "sources": "https://github.com/McJtyMods/LostWorlds"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "accessWidener": "META-INF/lostworlds.accesswidener",
+  "entrypoints": {
+    "main": ["mcjty.lostworlds.LostWorlds"],
+    "client": ["mcjty.lostworlds.setup.ClientSetup"]
+  },
+  "mixins": ["lostworlds.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "lostcities": ">=26.2-11.0.3-fabric",
+    "forgeconfigapiport": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}"
+  }
+}
