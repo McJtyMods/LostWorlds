@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -48,7 +49,6 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
 
     private final LWSettings lwSettings;
     private final NoiseGeneratorPerlin groundNoise; // For the deep ground in the ocean
-    private double[] groundBuffer = new double[256];
     private Level cachedLevel;
 
     public static final Codec<LWChunkGenerator> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -70,26 +70,26 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
 
     @Override
     public ChunkAccess doFill(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
-        ChunkPos cp = chunkAccess.getPos();
         boolean customSea = lwSettings.hasCustomSea();
-        if (customSea || lwSettings.type() == LostWorldType.CAVESPHERES) {
-            this.groundBuffer = this.groundNoise.getRegion(this.groundBuffer, (cp.x * 16), (cp.z * 16), 16, 16, 1.0 / 16.0, 1.0 / 16.0, 1.0D);
-        }
+        double[] groundBuffer = customSea || lwSettings.type() == LostWorldType.CAVESPHERES
+                ? sampleGroundNoise(chunkAccess.getPos())
+                : null;
 
         if (lwSettings.type() == LostWorldType.SPHERES) {
-            chunkAccess = doFillSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+            chunkAccess = doFillSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY, groundBuffer);
         } else if (lwSettings.type() == LostWorldType.CAVESPHERES) {
-            chunkAccess = doFillCaveSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
+            chunkAccess = doFillCaveSpheres(blender, structureManager, random, chunkAccess, minCellY, cellCountY, groundBuffer);
         } else {
             chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
             if (customSea) {
-                fillCustomSea(chunkAccess, cp);
+                fillCustomSea(chunkAccess, groundBuffer);
             }
         }
         return chunkAccess;
     }
 
-    private @NotNull ChunkAccess doFillCaveSpheres(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
+    private @NotNull ChunkAccess doFillCaveSpheres(Blender blender, StructureManager structureManager, RandomState random,
+                                                ChunkAccess chunkAccess, int minCellY, int cellCountY, double[] groundBuffer) {
         chunkAccess = super.doFill(blender, structureManager, random, chunkAccess, minCellY, cellCountY);
         ChunkPos cp = chunkAccess.getPos();
         WorldGenRegion region = (WorldGenRegion) structureManager.level;
@@ -105,7 +105,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         int middleY = (minSphereY + maxSphereY) / 2;
         for (int x = 0; x < 16; ++x) {
             for (int z = 0; z < 16; ++z) {
-                int height = getGroundLevel(x, z) + middleY + 15;
+                int height = getGroundLevel(groundBuffer, x, z) + middleY + 15;
                 for (int y = Math.max(minBuildHeight, minSphereY); y <= Math.min(maxBuildHeight-1, maxSphereY); ++y) {
                     LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
                     if (context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
@@ -121,7 +121,8 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         return chunkAccess;
     }
 
-    private ChunkAccess doFillSpheres(Blender blender, StructureManager structureManager, RandomState random, ChunkAccess chunkAccess, int minCellY, int cellCountY) {
+    private ChunkAccess doFillSpheres(Blender blender, StructureManager structureManager, RandomState random,
+                                     ChunkAccess chunkAccess, int minCellY, int cellCountY, double[] groundBuffer) {
         ChunkPos cp = chunkAccess.getPos();
         boolean customSea = lwSettings.hasCustomSea();
         WorldGenRegion region = (WorldGenRegion) structureManager.level;
@@ -151,7 +152,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                     for (int x = 0; x < 16; ++x) {
                         for (int z = 0; z < 16; ++z) {
                             if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                                if (customSea && y < getGroundLevel(x, z)) {
+                                if (customSea && y < getGroundLevel(groundBuffer, x, z)) {
                                     levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                                 } else {
                                     levelchunksection.setBlockState(x, y & 15, z, block, false);
@@ -162,7 +163,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                 } else {
                     for (int x = 0; x < 16; ++x) {
                         for (int z = 0; z < 16; ++z) {
-                            if (customSea && y < getGroundLevel(x, z)) {
+                            if (customSea && y < getGroundLevel(groundBuffer, x, z)) {
                                 levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                             } else {
                                 levelchunksection.setBlockState(x, y & 15, z, block, false);
@@ -173,13 +174,17 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
             }
         } else {
             if (customSea) {
-                fillCustomSea(chunkAccess, cp);
+                fillCustomSea(chunkAccess, groundBuffer);
             }
         }
         return chunkAccess;
     }
 
-    private int getGroundLevel(int x, int z) {
+    private double[] sampleGroundNoise(ChunkPos chunkPos) {
+        return groundNoise.getRegion(null, chunkPos.getMinBlockX(), chunkPos.getMinBlockZ(), 16, 16, 1.0 / 16.0, 1.0 / 16.0, 1.0D);
+    }
+
+    private int getGroundLevel(double[] groundBuffer, int x, int z) {
         double vr = -15 + groundBuffer[x + z * 16] / GROUND_SCALE;
         return (int) vr;
     }
@@ -207,9 +212,9 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         }
     }
 
-    private void fillCustomSea(ChunkAccess chunkAccess, ChunkPos cp) {
-        Heightmap heightmap = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-        Heightmap heightmap1 = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+    private void fillCustomSea(ChunkAccess chunkAccess, double[] groundBuffer) {
+        Heightmap oceanFloor = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+        Heightmap worldSurface = chunkAccess.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
         BlockState defaultBlock = generatorSettings().get().defaultBlock();
         BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
@@ -217,44 +222,30 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         BlockState air = Blocks.AIR.defaultBlockState();
 
         int minBuildHeight = chunkAccess.getMinBuildHeight();
+        int seaLevel = Math.min(lwSettings.seaLevel(), chunkAccess.getMaxBuildHeight() - 1);
+        boolean islands = lwSettings.type() == LostWorldType.ISLANDS;
+        int bedrockCeiling = islands ? Math.min(minBuildHeight + 2, seaLevel) : minBuildHeight + 2;
+        int groundOffset = Math.min(0, seaLevel);
 
-        if (lwSettings.type() == LostWorldType.ISLANDS) {
-            // For islands we don't override blocks that are already there
-            for (int x = 0; x < 16; ++x) {
-                for (int z = 0; z < 16; ++z) {
-                    int vr = getGroundLevel(x, z);
-                    for (int y = minBuildHeight; y <= lwSettings.seaLevel(); ++y) {
-                        BlockState b;
-                        if (y < vr) {
-                            b = y < (minBuildHeight + 2) ? bedrock : defaultBlock;
-                        } else {
-                            b = water;
-                        }
-                        LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                        if (levelchunksection.getBlockState(x, y & 15, z) == air) {
-                            levelchunksection.setBlockState(x, y & 15, z, b, false);
-                            heightmap.update(x, y, z, b);
-                            heightmap1.update(x, y, z, b);
-                        }
-                    }
+        for (int x = 0; x < 16; ++x) {
+            for (int z = 0; z < 16; ++z) {
+                int firstWaterY = getGroundLevel(groundBuffer, x, z);
+                if (islands) {
+                    // Lower the seabed with a negative sea level and leave room for water near the bottom.
+                    firstWaterY = Mth.clamp(firstWaterY + groundOffset, bedrockCeiling, seaLevel);
                 }
-            }
-        } else {
-            for (int x = 0; x < 16; ++x) {
-                for (int z = 0; z < 16; ++z) {
-                    int vr = getGroundLevel(x, z);
-                    for (int y = minBuildHeight; y <= lwSettings.seaLevel(); ++y) {
-                        BlockState b;
-                        if (y < vr) {
-                            b = y < (minBuildHeight + 2) ? bedrock : defaultBlock;
-                        } else {
-                            b = water;
-                        }
-                        LevelChunkSection levelchunksection = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
-                        levelchunksection.setBlockState(x, y & 15, z, b, false);
-                        heightmap.update(x, y, z, b);
-                        heightmap1.update(x, y, z, b);
+                for (int y = minBuildHeight; y <= seaLevel; ++y) {
+                    LevelChunkSection section = chunkAccess.getSection(chunkAccess.getSectionIndex(y));
+                    if (islands && section.getBlockState(x, y & 15, z) != air) {
+                        continue;
                     }
+                    BlockState block = water;
+                    if (y < firstWaterY) {
+                        block = y < bedrockCeiling ? bedrock : defaultBlock;
+                    }
+                    section.setBlockState(x, y & 15, z, block, false);
+                    oceanFloor.update(x, y, z, block);
+                    worldSurface.update(x, y, z, block);
                 }
             }
         }
@@ -279,9 +270,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
         if (lwSettings.type() == LostWorldType.SPHERES) {
             ChunkPos cp = chunkAccess.getPos();
             boolean customSea = lwSettings.hasCustomSea();
-            if (customSea) {
-                this.groundBuffer = this.groundNoise.getRegion(this.groundBuffer, (cp.x * 16), (cp.z * 16), 16, 16, 1.0 / 16.0, 1.0 / 16.0, 1.0D);
-            }
+            double[] groundBuffer = customSea ? sampleGroundNoise(cp) : null;
             BlockState water;
             BlockState air = Blocks.AIR.defaultBlockState();
             if (customSea) {
@@ -315,7 +304,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                             for (int x = 0; x < 16; ++x) {
                                 for (int z = 0; z < 16; ++z) {
                                     if (!context.isInSphere(cp.getMinBlockX() + x, y, cp.getMinBlockZ() + z)) {
-                                        if (customSea && y < getGroundLevel(x, z)) {
+                                        if (customSea && y < getGroundLevel(groundBuffer, x, z)) {
                                             levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                                         } else {
                                             levelchunksection.setBlockState(x, y & 15, z, block, false);
@@ -326,7 +315,7 @@ public class LWChunkGenerator extends NoiseBasedChunkGenerator implements ILostW
                         } else {
                             for (int x = 0; x < 16; ++x) {
                                 for (int z = 0; z < 16; ++z) {
-                                    if (customSea && y < getGroundLevel(x, z)) {
+                                    if (customSea && y < getGroundLevel(groundBuffer, x, z)) {
                                         levelchunksection.setBlockState(x, y & 15, z, y < minBuildHeight + 2 ? bedrock : defaultBlock, false);
                                     } else {
                                         levelchunksection.setBlockState(x, y & 15, z, block, false);

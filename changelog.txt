@@ -1,3 +1,6 @@
+1.20-0.0.4:
+- Fixed low custom sea levels in Islands worlds generating solid deepslate where the ocean should be.
+
 1.20-0.0.3:
 - New 'cavespheres' Lost world type combining caverns and spheres
 - New lostworlds:abyss dimension that demonstrates the new cavern with spheres
